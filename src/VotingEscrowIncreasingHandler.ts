@@ -12,7 +12,7 @@ import {
   VotingEscrowIncreasing_Upgraded,
   VotingEscrowIncreasing_Withdraw,
 } from "generated";
-import { setContractData } from "./helpers";
+import { setContractData, updateLocksDayData, updateWithdrawalLocksDayData, updateDepositLocksDayData } from "./helpers";
 
 VotingEscrowIncreasing.AdminChanged.handler(async ({ event, context }) => {
   setContractData(event.chainId, event.srcAddress, context)
@@ -51,6 +51,9 @@ VotingEscrowIncreasing.Deposit.handler(async ({ event, context }) => {
   };
 
   context.VotingEscrowIncreasing_Deposit.set(entity);
+
+  await updateDepositLocksDayData(event.chainId, event.srcAddress, event.params.value, Number(event.params.startTs), context);
+  await updateLocksDayData(event.chainId, event.srcAddress, event.params.newTotalLocked, Number(event.params.startTs), true, context);
 });
 
 VotingEscrowIncreasing.Initialized.handler(async ({ event, context }) => {
@@ -141,4 +144,7 @@ VotingEscrowIncreasing.Withdraw.handler(async ({ event, context }) => {
   };
 
   context.VotingEscrowIncreasing_Withdraw.set(entity);
+
+  await updateWithdrawalLocksDayData(event.chainId, event.srcAddress, event.params.value, Number(event.params.ts), context);
+  await updateLocksDayData(event.chainId, event.srcAddress, event.params.newTotalLocked, Number(event.params.ts), false, context);
 });

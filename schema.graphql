@@ -171,3 +171,27 @@ type VotingEscrowIncreasing_Withdraw {
   contract: ContractData!
 }
 
+type VotingEscrowIncreasing_AggregatedDepositDayData {
+  id: ID! # VotingEscrowAddress + "-" + dayId + "-" + chainId
+  date: Int! # timestamp rounded to current day by dividing by 86400
+  contract: ContractData!
+  totalLocked: BigInt!
+  amountOfLocks: BigInt!
+}
+
+type VotingEscrowIncreasing_AggregatedWithdrawDayData {
+  id: ID! # VotingEscrowAddress + "-" + dayId + "-" + chainId
+  date: Int! # timestamp rounded to current day by dividing by 86400
+  contract: ContractData!
+  totalWithdraw: BigInt!
+  amountOfWithdrawals: BigInt!
+}
+
+type VotingEscrowIncreasing_AggregatedDayData {
+  id: ID! # VotingEscrowAddress + "-" + dayId + "-" + chainId
+  date: Int! # timestamp rounded to current day by dividing by 86400
+  contract: ContractData!
+  totalLocked: BigInt!
+  amountOfLocks: BigInt!
+}
+
