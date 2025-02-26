@@ -2,6 +2,7 @@
  * Please refer to https://docs.envio.dev for a thorough guide on all Envio indexer features
  */
 import {
+  ContractData,
   SimpleGaugeVoter,
   SimpleGaugeVoter_AdminChanged,
   SimpleGaugeVoter_BeaconUpgraded,
@@ -28,21 +29,43 @@ import {
   VotingEscrowIncreasing_Upgraded,
   VotingEscrowIncreasing_Withdraw,
 } from "generated";
+import { getGeneratedByChainId } from "../generated/src/ConfigYAML.gen";
+import { Context } from "vm";
+
+
+
+const setContractData = async (chainId: Number, srcAddress: String, context: Context) => {
+  let contract_id = await context.ContractData.get(`${chainId}_${srcAddress}`);
+
+  if (!contract_id) {
+    context.ContractData.set({
+      id: `${chainId}_${srcAddress}`,
+      address: srcAddress,
+      chainId: chainId
+    })
+  }
+}
 
 SimpleGaugeVoter.AdminChanged.handler(async ({ event, context }) => {
+  setContractData(event.chainId, event.srcAddress, context)
+
   const entity: SimpleGaugeVoter_AdminChanged = {
     id: `${event.chainId}_${event.block.number}_${event.logIndex}`,
     previousAdmin: event.params.previousAdmin,
     newAdmin: event.params.newAdmin,
+    contract_id: `${event.chainId}_${event.srcAddress}`
   };
 
   context.SimpleGaugeVoter_AdminChanged.set(entity);
 });
 
 SimpleGaugeVoter.BeaconUpgraded.handler(async ({ event, context }) => {
+  setContractData(event.chainId, event.srcAddress, context)
+
   const entity: SimpleGaugeVoter_BeaconUpgraded = {
     id: `${event.chainId}_${event.block.number}_${event.logIndex}`,
     beacon: event.params.beacon,
+    contract_id: `${event.chainId}_${event.srcAddress}`
   };
 
   context.SimpleGaugeVoter_BeaconUpgraded.set(entity);
@@ -52,17 +75,21 @@ SimpleGaugeVoter.GaugeActivated.handler(async ({ event, context }) => {
   const entity: SimpleGaugeVoter_GaugeActivated = {
     id: `${event.chainId}_${event.block.number}_${event.logIndex}`,
     gauge: event.params.gauge,
+    contract_id: `${event.chainId}_${event.srcAddress}`
   };
 
   context.SimpleGaugeVoter_GaugeActivated.set(entity);
 });
 
 SimpleGaugeVoter.GaugeCreated.handler(async ({ event, context }) => {
+  setContractData(event.chainId, event.srcAddress, context)
+
   const entity: SimpleGaugeVoter_GaugeCreated = {
     id: `${event.chainId}_${event.block.number}_${event.logIndex}`,
     gauge: event.params.gauge,
     creator: event.params.creator,
     metadataURI: event.params.metadataURI,
+    contract_id: `${event.chainId}_${event.srcAddress}`
   };
 
   context.SimpleGaugeVoter_GaugeCreated.set(entity);
@@ -72,6 +99,7 @@ SimpleGaugeVoter.GaugeDeactivated.handler(async ({ event, context }) => {
   const entity: SimpleGaugeVoter_GaugeDeactivated = {
     id: `${event.chainId}_${event.block.number}_${event.logIndex}`,
     gauge: event.params.gauge,
+    contract_id: `${event.chainId}_${event.srcAddress}`
   };
 
   context.SimpleGaugeVoter_GaugeDeactivated.set(entity);
@@ -82,15 +110,19 @@ SimpleGaugeVoter.GaugeMetadataUpdated.handler(async ({ event, context }) => {
     id: `${event.chainId}_${event.block.number}_${event.logIndex}`,
     gauge: event.params.gauge,
     metadataURI: event.params.metadataURI,
+    contract_id: `${event.chainId}_${event.srcAddress}`
   };
 
   context.SimpleGaugeVoter_GaugeMetadataUpdated.set(entity);
 });
 
 SimpleGaugeVoter.Initialized.handler(async ({ event, context }) => {
+  setContractData(event.chainId, event.srcAddress, context)
+
   const entity: SimpleGaugeVoter_Initialized = {
     id: `${event.chainId}_${event.block.number}_${event.logIndex}`,
     version: event.params.version,
+    contract_id: `${event.chainId}_${event.srcAddress}`
   };
 
   context.SimpleGaugeVoter_Initialized.set(entity);
@@ -100,6 +132,7 @@ SimpleGaugeVoter.Paused.handler(async ({ event, context }) => {
   const entity: SimpleGaugeVoter_Paused = {
     id: `${event.chainId}_${event.block.number}_${event.logIndex}`,
     account: event.params.account,
+    contract_id: `${event.chainId}_${event.srcAddress}`
   };
 
   context.SimpleGaugeVoter_Paused.set(entity);
@@ -116,15 +149,19 @@ SimpleGaugeVoter.Reset.handler(async ({ event, context }) => {
     totalVotingPowerInGauge: event.params.totalVotingPowerInGauge,
     totalVotingPowerInContract: event.params.totalVotingPowerInContract,
     timestamp: event.params.timestamp,
+    contract_id: `${event.chainId}_${event.srcAddress}`
   };
 
   context.SimpleGaugeVoter_Reset.set(entity);
 });
 
 SimpleGaugeVoter.Unpaused.handler(async ({ event, context }) => {
+  setContractData(event.chainId, event.srcAddress, context)
+
   const entity: SimpleGaugeVoter_Unpaused = {
     id: `${event.chainId}_${event.block.number}_${event.logIndex}`,
     account: event.params.account,
+    contract_id: `${event.chainId}_${event.srcAddress}`
   };
 
   context.SimpleGaugeVoter_Unpaused.set(entity);
@@ -134,6 +171,7 @@ SimpleGaugeVoter.Upgraded.handler(async ({ event, context }) => {
   const entity: SimpleGaugeVoter_Upgraded = {
     id: `${event.chainId}_${event.block.number}_${event.logIndex}`,
     implementation: event.params.implementation,
+    contract_id: `${event.chainId}_${event.srcAddress}`
   };
 
   context.SimpleGaugeVoter_Upgraded.set(entity);
@@ -150,25 +188,32 @@ SimpleGaugeVoter.Voted.handler(async ({ event, context }) => {
     totalVotingPowerInGauge: event.params.totalVotingPowerInGauge,
     totalVotingPowerInContract: event.params.totalVotingPowerInContract,
     timestamp: event.params.timestamp,
+    contract_id: `${event.chainId}_${event.srcAddress}`
   };
 
   context.SimpleGaugeVoter_Voted.set(entity);
 });
 
 VotingEscrowIncreasing.AdminChanged.handler(async ({ event, context }) => {
+  setContractData(event.chainId, event.srcAddress, context)
+
   const entity: VotingEscrowIncreasing_AdminChanged = {
     id: `${event.chainId}_${event.block.number}_${event.logIndex}`,
     previousAdmin: event.params.previousAdmin,
     newAdmin: event.params.newAdmin,
+    contract_id: `${event.chainId}_${event.srcAddress}`
   };
 
   context.VotingEscrowIncreasing_AdminChanged.set(entity);
 });
 
 VotingEscrowIncreasing.BeaconUpgraded.handler(async ({ event, context }) => {
+  setContractData(event.chainId, event.srcAddress, context)
+
   const entity: VotingEscrowIncreasing_BeaconUpgraded = {
     id: `${event.chainId}_${event.block.number}_${event.logIndex}`,
     beacon: event.params.beacon,
+    contract_id: `${event.chainId}_${event.srcAddress}`
   };
 
   context.VotingEscrowIncreasing_BeaconUpgraded.set(entity);
@@ -182,15 +227,19 @@ VotingEscrowIncreasing.Deposit.handler(async ({ event, context }) => {
     startTs: event.params.startTs,
     value: event.params.value,
     newTotalLocked: event.params.newTotalLocked,
+    contract_id: `${event.chainId}_${event.srcAddress}`
   };
 
   context.VotingEscrowIncreasing_Deposit.set(entity);
 });
 
 VotingEscrowIncreasing.Initialized.handler(async ({ event, context }) => {
+  setContractData(event.chainId, event.srcAddress, context)
+
   const entity: VotingEscrowIncreasing_Initialized = {
     id: `${event.chainId}_${event.block.number}_${event.logIndex}`,
     version: event.params.version,
+    contract_id: `${event.chainId}_${event.srcAddress}`
   };
 
   context.VotingEscrowIncreasing_Initialized.set(entity);
@@ -200,6 +249,7 @@ VotingEscrowIncreasing.MinDepositSet.handler(async ({ event, context }) => {
   const entity: VotingEscrowIncreasing_MinDepositSet = {
     id: `${event.chainId}_${event.block.number}_${event.logIndex}`,
     minDeposit: event.params.minDeposit,
+    contract_id: `${event.chainId}_${event.srcAddress}`
   };
 
   context.VotingEscrowIncreasing_MinDepositSet.set(entity);
@@ -209,6 +259,7 @@ VotingEscrowIncreasing.Paused.handler(async ({ event, context }) => {
   const entity: VotingEscrowIncreasing_Paused = {
     id: `${event.chainId}_${event.block.number}_${event.logIndex}`,
     account: event.params.account,
+    contract_id: `${event.chainId}_${event.srcAddress}`
   };
 
   context.VotingEscrowIncreasing_Paused.set(entity);
@@ -219,6 +270,7 @@ VotingEscrowIncreasing.Sweep.handler(async ({ event, context }) => {
     id: `${event.chainId}_${event.block.number}_${event.logIndex}`,
     to: event.params.to,
     amount: event.params.amount,
+    contract_id: `${event.chainId}_${event.srcAddress}`
   };
 
   context.VotingEscrowIncreasing_Sweep.set(entity);
@@ -229,15 +281,19 @@ VotingEscrowIncreasing.SweepNFT.handler(async ({ event, context }) => {
     id: `${event.chainId}_${event.block.number}_${event.logIndex}`,
     to: event.params.to,
     tokenId: event.params.tokenId,
+    contract_id: `${event.chainId}_${event.srcAddress}`
   };
 
   context.VotingEscrowIncreasing_SweepNFT.set(entity);
 });
 
 VotingEscrowIncreasing.Unpaused.handler(async ({ event, context }) => {
+  setContractData(event.chainId, event.srcAddress, context)
+
   const entity: VotingEscrowIncreasing_Unpaused = {
     id: `${event.chainId}_${event.block.number}_${event.logIndex}`,
     account: event.params.account,
+    contract_id: `${event.chainId}_${event.srcAddress}`
   };
 
   context.VotingEscrowIncreasing_Unpaused.set(entity);
@@ -247,6 +303,7 @@ VotingEscrowIncreasing.Upgraded.handler(async ({ event, context }) => {
   const entity: VotingEscrowIncreasing_Upgraded = {
     id: `${event.chainId}_${event.block.number}_${event.logIndex}`,
     implementation: event.params.implementation,
+    contract_id: `${event.chainId}_${event.srcAddress}`
   };
 
   context.VotingEscrowIncreasing_Upgraded.set(entity);
@@ -260,6 +317,7 @@ VotingEscrowIncreasing.Withdraw.handler(async ({ event, context }) => {
     value: event.params.value,
     ts: event.params.ts,
     newTotalLocked: event.params.newTotalLocked,
+    contract_id: `${event.chainId}_${event.srcAddress}`
   };
 
   context.VotingEscrowIncreasing_Withdraw.set(entity);
