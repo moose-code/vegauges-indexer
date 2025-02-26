@@ -1,6 +1,6 @@
 type ContractData {
   id: ID!
-  chainId: Int!
+  chainId: String!
   address: String!
 }
 
@@ -91,7 +91,7 @@ type SimpleGaugeVoter_Voted {
   totalVotingPowerInGauge: BigInt!
   totalVotingPowerInContract: BigInt!
   timestamp: BigInt!
-  contract: ContractData!
+  contract: ContractData! @index
 }
 
 type VotingEscrowIncreasing_AdminChanged {
@@ -114,7 +114,7 @@ type VotingEscrowIncreasing_Deposit {
   startTs: BigInt!
   value: BigInt!
   newTotalLocked: BigInt!
-  contract: ContractData!
+  contract: ContractData! @index
 }
 
 type VotingEscrowIncreasing_Initialized {
