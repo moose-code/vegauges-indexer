@@ -13,7 +13,7 @@ import {
   SimpleGaugeVoter_Upgraded,
   SimpleGaugeVoter_Voted,
 } from "generated";
-import { setContractData } from './helpers';
+import { setContractData, addVotedDayData, resetVotedDayData } from './helpers';
 
 
 SimpleGaugeVoter.AdminChanged.handler(async ({ event, context }) => {
@@ -123,6 +123,7 @@ SimpleGaugeVoter.Reset.handler(async ({ event, context }) => {
   };
 
   context.SimpleGaugeVoter_Reset.set(entity);
+  resetVotedDayData(event.chainId, event.srcAddress, event.params.gauge, event.params.votingPowerRemovedFromGauge, Number(event.params.timestamp), context);
 });
 
 SimpleGaugeVoter.Unpaused.handler(async ({ event, context }) => {
@@ -162,6 +163,8 @@ SimpleGaugeVoter.Voted.handler(async ({ event, context }) => {
   };
 
   context.SimpleGaugeVoter_Voted.set(entity);
+
+  addVotedDayData(event.chainId, event.srcAddress, event.params.gauge, event.params.votingPowerCastForGauge, Number(event.params.timestamp), context);
 });
 
 

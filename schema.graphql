@@ -195,3 +195,18 @@ type VotingEscrowIncreasing_AggregatedDayData {
   amountOfLocks: BigInt!
 }
 
+type AggregatedGaugeWithVotes {
+  id: ID! # SimpleGaugeVoterAddress + "-" + dayId + "-" + chainId
+  gauge: String!, @index
+  totalVotingPowerInGauge: BigInt!
+  totalVoters: BigInt!,
+  dayDataAggregation: SimpleGaugeVoter_Voted_AggregatedGaugeDayData!
+}
+
+type SimpleGaugeVoter_Voted_AggregatedGaugeDayData {
+  id: ID! # SimpleGaugeVoterAddress + "-" + dayId + "-" + chainId
+  date: Int! # timestamp rounded to current day by dividing by 86400
+  contract: ContractData!
+  gauges: [AggregatedGaugeWithVotes!]! @derivedFrom(field: "dayDataAggregation")
+  totalVotingPowerInContract: BigInt!
+}

@@ -97,3 +97,97 @@ export const updateLocksDayData = async (chainId: Number, srcAddress: String, to
   }
 }
 
+export const addVotedDayData = async (
+  chainId: Number,
+  srcAddress: String,
+  gauge: String,
+  votingPowerCastForGauge: BigInt,
+  timestamp: number,
+  context: Context
+) => {
+  const dayID = getDayID(timestamp);
+  const dayStartTimestamp = getDayStartTimestamp(dayID);
+  const aggregatedDataID = `${srcAddress}-${dayID}-${chainId}`;
+
+  let votesData = await context.SimpleGaugeVoter_Voted_AggregatedGaugeDayData.get(aggregatedDataID);
+
+  const gaugeDataID = `${gauge}-${dayID}-${chainId}`;
+  let gaugeData = await context.AggregatedGaugeWithVotes.get(gaugeDataID);
+
+  if (!gaugeData) {
+    context.AggregatedGaugeWithVotes.set({
+      id: gaugeDataID,
+      gauge: gauge,
+      totalVotingPowerInGauge: votingPowerCastForGauge,
+      totalVoters: 1,
+      dayDataAggregation_id: aggregatedDataID
+    });
+  } else {
+    context.AggregatedGaugeWithVotes.set({
+      id: gaugeDataID,
+      gauge: gauge,
+      totalVotingPowerInGauge: gaugeData.totalVotingPowerInGauge + votingPowerCastForGauge,
+      totalVoters: gaugeData.totalVoters++,
+      dayDataAggregation_id: aggregatedDataID
+    });
+  }
+
+  if (!votesData) {
+    context.SimpleGaugeVoter_Voted_AggregatedGaugeDayData.set({
+      id: aggregatedDataID,
+      date: dayStartTimestamp,
+      contract_id: `${chainId}_${srcAddress}`,
+      totalVotingPowerInContract: votingPowerCastForGauge,
+    })
+  } else {
+    context.SimpleGaugeVoter_Voted_AggregatedGaugeDayData.set({
+      id: aggregatedDataID,
+      date: dayStartTimestamp,
+      contract_id: `${chainId}_${srcAddress}`,
+      totalVotingPowerInContract: votesData.totalVotingPowerInContract + votingPowerCastForGauge,
+    })
+  }
+}
+
+export const resetVotedDayData = async (
+  chainId: Number,
+  srcAddress: String,
+  gauge: String,
+  votingPowerCastForGauge: bigint,
+  timestamp: number,
+  context: Context
+) => {
+  const dayID = getDayID(timestamp);
+  const dayStartTimestamp = getDayStartTimestamp(dayID);
+  const aggregatedDataID = `${srcAddress}-${dayID}-${chainId}`;
+
+  let votesData = await context.SimpleGaugeVoter_Voted_AggregatedGaugeDayData.get(aggregatedDataID);
+  const gaugeDataID = `${gauge}-${dayID}-${chainId}`;
+  let gaugeData = await context.AggregatedGaugeWithVotes.get(gaugeDataID);
+
+  if (gaugeData) {
+    context.AggregatedGaugeWithVotes.set({
+      id: gaugeDataID,
+      gauge: gauge,
+      totalVotingPowerInGauge: gaugeData.totalVotingPowerInGauge - votingPowerCastForGauge,
+      totalVoters: gaugeData.totalVoters--,
+      dayDataAggregation_id: aggregatedDataID
+    });
+  }
+
+  if (!votesData) {
+    context.SimpleGaugeVoter_Voted_AggregatedGaugeDayData.set({
+      id: aggregatedDataID,
+      date: dayStartTimestamp,
+      contract_id: `${chainId}_${srcAddress}`,
+      totalVotingPowerInContract: votingPowerCastForGauge,
+    })
+  } else {
+    context.SimpleGaugeVoter_Voted_AggregatedGaugeDayData.set({
+      id: aggregatedDataID,
+      date: dayStartTimestamp,
+      contract_id: `${chainId}_${srcAddress}`,
+      totalVotingPowerInContract: votesData.totalVotingPowerInContract + votingPowerCastForGauge,
+    })
+  }
+}
