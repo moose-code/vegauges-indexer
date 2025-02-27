@@ -1,212 +1,219 @@
 type ContractData {
-  id: ID!
-  chainId: String!
-  address: String!
+    id: ID!
+    chainId: String!
+    address: String!
+}
+
+type Staker {
+    id: ID! # SimpleGaugeVoterAddress + "-" + user + "-" + chainId
+    address: String!
+    votingEscrowIncreasing: ContractData!
 }
 
 type SimpleGaugeVoter_AdminChanged {
-  id: ID!
-  previousAdmin: String!
-  newAdmin: String!
-  contract: ContractData!
+    id: ID!
+    previousAdmin: String!
+    newAdmin: String!
+    contract: ContractData!
 }
 
 type SimpleGaugeVoter_BeaconUpgraded {
-  id: ID!
-  beacon: String!
-  contract: ContractData!
+    id: ID!
+    beacon: String!
+    contract: ContractData!
 }
 
 type SimpleGaugeVoter_GaugeActivated {
-  id: ID!
-  gauge: String!
-  contract: ContractData!
+    id: ID!
+    gauge: String!
+    contract: ContractData!
 }
 
 type SimpleGaugeVoter_GaugeCreated {
-  id: ID!
-  gauge: String!
-  creator: String!
-  metadataURI: String!
-  contract: ContractData!
+    id: ID!
+    gauge: String!
+    creator: String!
+    metadataURI: String!
+    contract: ContractData!
 }
 
 type SimpleGaugeVoter_GaugeDeactivated {
-  id: ID!
-  gauge: String!
-  contract: ContractData!
+    id: ID!
+    gauge: String!
+    contract: ContractData!
 }
 
 type SimpleGaugeVoter_GaugeMetadataUpdated {
-  id: ID!
-  gauge: String!
-  metadataURI: String!
-  contract: ContractData!
+    id: ID!
+    gauge: String!
+    metadataURI: String!
+    contract: ContractData!
 }
 
 type SimpleGaugeVoter_Initialized {
-  id: ID!
-  version: BigInt!
-  contract: ContractData!
+    id: ID!
+    version: BigInt!
+    contract: ContractData!
 }
 
 type SimpleGaugeVoter_Paused {
-  id: ID!
-  account: String!
-  contract: ContractData!
+    id: ID!
+    account: String!
+    contract: ContractData!
 }
 
 type SimpleGaugeVoter_Reset {
-  id: ID!
-  voter: String!
-  gauge: String!
-  epoch: BigInt!
-  tokenId: BigInt!
-  votingPowerRemovedFromGauge: BigInt!
-  totalVotingPowerInGauge: BigInt!
-  totalVotingPowerInContract: BigInt!
-  timestamp: BigInt!
-  contract: ContractData!
+    id: ID!
+    voter: String!
+    gauge: String!
+    epoch: BigInt!
+    tokenId: BigInt!
+    votingPowerRemovedFromGauge: BigInt!
+    totalVotingPowerInGauge: BigInt!
+    totalVotingPowerInContract: BigInt!
+    timestamp: BigInt!
+    contract: ContractData!
 }
 
 type SimpleGaugeVoter_Unpaused {
-  id: ID!
-  account: String!
-  contract: ContractData!
+    id: ID!
+    account: String!
+    contract: ContractData!
 }
 
 type SimpleGaugeVoter_Upgraded {
-  id: ID!
-  implementation: String!
-  contract: ContractData!
+    id: ID!
+    implementation: String!
+    contract: ContractData!
 }
 
 type SimpleGaugeVoter_Voted {
-  id: ID!
-  voter: String!
-  gauge: String!
-  epoch: BigInt!
-  tokenId: BigInt!
-  votingPowerCastForGauge: BigInt!
-  totalVotingPowerInGauge: BigInt!
-  totalVotingPowerInContract: BigInt!
-  timestamp: BigInt!
-  contract: ContractData! @index
+    id: ID!
+    voter: String!
+    gauge: String!
+    epoch: BigInt!
+    tokenId: BigInt!
+    votingPowerCastForGauge: BigInt!
+    totalVotingPowerInGauge: BigInt!
+    totalVotingPowerInContract: BigInt!
+    timestamp: BigInt!
+    contract: ContractData! @index
 }
 
 type VotingEscrowIncreasing_AdminChanged {
-  id: ID!
-  previousAdmin: String!
-  newAdmin: String!
-  contract: ContractData!
+    id: ID!
+    previousAdmin: String!
+    newAdmin: String!
+    contract: ContractData!
 }
 
 type VotingEscrowIncreasing_BeaconUpgraded {
-  id: ID!
-  beacon: String!
-  contract: ContractData!
+    id: ID!
+    beacon: String!
+    contract: ContractData!
 }
 
 type VotingEscrowIncreasing_Deposit {
-  id: ID!
-  depositor: String!
-  tokenId: BigInt!
-  startTs: BigInt!
-  value: BigInt!
-  newTotalLocked: BigInt!
-  contract: ContractData! @index
+    id: ID!
+    depositor: String!
+    tokenId: BigInt!
+    startTs: BigInt!
+    value: BigInt!
+    newTotalLocked: BigInt!
+    contract: ContractData! @index
 }
 
 type VotingEscrowIncreasing_Initialized {
-  id: ID!
-  version: BigInt!
-  contract: ContractData!
+    id: ID!
+    version: BigInt!
+    contract: ContractData!
 }
 
 type VotingEscrowIncreasing_MinDepositSet {
-  id: ID!
-  minDeposit: BigInt!
-  contract: ContractData!
+    id: ID!
+    minDeposit: BigInt!
+    contract: ContractData!
 }
 
 type VotingEscrowIncreasing_Paused {
-  id: ID!
-  account: String!
-  contract: ContractData!
+    id: ID!
+    account: String!
+    contract: ContractData!
 }
 
 type VotingEscrowIncreasing_Sweep {
-  id: ID!
-  to: String!
-  amount: BigInt!
-  contract: ContractData!
+    id: ID!
+    to: String!
+    amount: BigInt!
+    contract: ContractData!
 }
 
 type VotingEscrowIncreasing_SweepNFT {
-  id: ID!
-  to: String!
-  tokenId: BigInt!
-  contract: ContractData!
+    id: ID!
+    to: String!
+    tokenId: BigInt!
+    contract: ContractData!
 }
 
 type VotingEscrowIncreasing_Unpaused {
-  id: ID!
-  account: String!
-  contract: ContractData!
+    id: ID!
+    account: String!
+    contract: ContractData!
 }
 
 type VotingEscrowIncreasing_Upgraded {
-  id: ID!
-  implementation: String!
-  contract: ContractData!
+    id: ID!
+    implementation: String!
+    contract: ContractData!
 }
 
 type VotingEscrowIncreasing_Withdraw {
-  id: ID!
-  depositor: String!
-  tokenId: BigInt!
-  value: BigInt!
-  ts: BigInt!
-  newTotalLocked: BigInt!
-  contract: ContractData!
+    id: ID!
+    depositor: String!
+    tokenId: BigInt!
+    value: BigInt!
+    ts: BigInt!
+    newTotalLocked: BigInt!
+    contract: ContractData!
 }
 
 type VotingEscrowIncreasing_AggregatedDepositDayData {
-  id: ID! # VotingEscrowAddress + "-" + dayId + "-" + chainId
-  date: Int! # timestamp rounded to current day by dividing by 86400
-  contract: ContractData!
-  totalLocked: BigInt!
-  amountOfLocks: BigInt!
+    id: ID! # VotingEscrowAddress + "-" + dayId + "-" + chainId
+    date: Int! # timestamp rounded to current day by dividing by 86400
+    contract: ContractData!
+    totalLocked: BigInt!
+    amountOfLocks: BigInt!
 }
 
 type VotingEscrowIncreasing_AggregatedWithdrawDayData {
-  id: ID! # VotingEscrowAddress + "-" + dayId + "-" + chainId
-  date: Int! # timestamp rounded to current day by dividing by 86400
-  contract: ContractData!
-  totalWithdraw: BigInt!
-  amountOfWithdrawals: BigInt!
+    id: ID! # VotingEscrowAddress + "-" + dayId + "-" + chainId
+    date: Int! # timestamp rounded to current day by dividing by 86400
+    contract: ContractData!
+    totalWithdraw: BigInt!
+    amountOfWithdrawals: BigInt!
 }
 
 type VotingEscrowIncreasing_AggregatedDayData {
-  id: ID! # VotingEscrowAddress + "-" + dayId + "-" + chainId
-  date: Int! # timestamp rounded to current day by dividing by 86400
-  contract: ContractData!
-  totalLocked: BigInt!
-  amountOfLocks: BigInt!
+    id: ID! # VotingEscrowAddress + "-" + dayId + "-" + chainId
+    date: Int! # timestamp rounded to current day by dividing by 86400
+    contract: ContractData!
+    totalLocked: BigInt!
+    amountOfLocks: BigInt!
 }
 
 type AggregatedGaugeWithVotes {
-  id: ID! # SimpleGaugeVoterAddress + "-" + dayId + "-" + chainId
-  gauge: String!, @index
-  totalVotingPowerInGauge: BigInt!
-  totalVoters: BigInt!,
-  dayDataAggregation: SimpleGaugeVoter_Voted_AggregatedGaugeDayData!
+    id: ID! # SimpleGaugeVoterAddress + "-" + dayId + "-" + chainId
+    gauge: String! @index
+    totalVotingPowerInGauge: BigInt!
+    totalVoters: BigInt!
+    dayDataAggregation: SimpleGaugeVoter_Voted_AggregatedGaugeDayData!
 }
 
 type SimpleGaugeVoter_Voted_AggregatedGaugeDayData {
-  id: ID! # SimpleGaugeVoterAddress + "-" + dayId + "-" + chainId
-  date: Int! # timestamp rounded to current day by dividing by 86400
-  contract: ContractData!
-  gauges: [AggregatedGaugeWithVotes!]! @derivedFrom(field: "dayDataAggregation")
-  totalVotingPowerInContract: BigInt!
+    id: ID! # SimpleGaugeVoterAddress + "-" + dayId + "-" + chainId
+    date: Int! # timestamp rounded to current day by dividing by 86400
+    contract: ContractData!
+    gauges: [AggregatedGaugeWithVotes!]!
+        @derivedFrom(field: "dayDataAggregation")
+    totalVotingPowerInContract: BigInt!
 }
