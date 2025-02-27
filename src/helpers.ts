@@ -250,7 +250,26 @@ export const addUniqueStaker = async (
     context.Staker.set({
       id: staker_id,
       address: staker,
-      contract_id: `${chainId}_${srcAddress}`,
+      votingEscrowIncreasing_id: `${chainId}_${srcAddress}`,
+    });
+  }
+};
+
+export const addUniqueVoter = async (
+  chainId: Number,
+  srcAddress: String,
+  voter: String,
+  context: Context,
+) => {
+  let voter_id = `${srcAddress}_${voter}_${chainId}`;
+
+  let stakerData = await context.Voter.get(voter);
+
+  if (!stakerData) {
+    context.Voter.set({
+      id: voter_id,
+      address: voter,
+      simpleGaugeVoter_id: `${chainId}_${srcAddress}`,
     });
   }
 };

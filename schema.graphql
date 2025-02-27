@@ -10,6 +10,12 @@ type Staker {
     votingEscrowIncreasing: ContractData!
 }
 
+type Voter {
+    id: ID! # SimpleGaugeVoterAddress + "-" + user + "-" + chainId
+    address: String!
+    simpleGaugeVoter: ContractData!
+}
+
 type SimpleGaugeVoter_AdminChanged {
     id: ID!
     previousAdmin: String!
