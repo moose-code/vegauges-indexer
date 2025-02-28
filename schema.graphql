@@ -1,74 +1,52 @@
-type ContractData {
+# Core Types
+
+type Contract {
     id: ID!
     chainId: String!
     address: String!
 }
 
-type Staker {
+type StakerRegistry {
     id: ID! # SimpleGaugeVoterAddress + "-" + user + "-" + chainId
     address: String!
-    votingEscrowIncreasing: ContractData!
+    votingEscrow: Contract!
 }
 
-type Voter {
+type VoterRegistry {
     id: ID! # SimpleGaugeVoterAddress + "-" + user + "-" + chainId
     address: String!
-    simpleGaugeVoter: ContractData!
+    gaugeVoter: Contract!
 }
 
-type SimpleGaugeVoter_AdminChanged {
-    id: ID!
-    previousAdmin: String!
-    newAdmin: String!
-    contract: ContractData!
-}
-
-type SimpleGaugeVoter_BeaconUpgraded {
-    id: ID!
-    beacon: String!
-    contract: ContractData!
-}
-
-type SimpleGaugeVoter_GaugeActivated {
+# Gauge Voter Events
+type GaugeActivated {
     id: ID!
     gauge: String!
-    contract: ContractData!
+    contract: Contract!
 }
 
-type SimpleGaugeVoter_GaugeCreated {
+type GaugeCreated {
     id: ID!
     gauge: String!
     creator: String!
     metadataURI: String!
-    contract: ContractData!
+    contract: Contract!
 }
 
-type SimpleGaugeVoter_GaugeDeactivated {
+type GaugeDeactivated {
     id: ID!
     gauge: String!
-    contract: ContractData!
+    contract: Contract!
 }
 
-type SimpleGaugeVoter_GaugeMetadataUpdated {
+type GaugeMetadataUpdated {
     id: ID!
     gauge: String!
     metadataURI: String!
-    contract: ContractData!
+    contract: Contract!
 }
 
-type SimpleGaugeVoter_Initialized {
-    id: ID!
-    version: BigInt!
-    contract: ContractData!
-}
-
-type SimpleGaugeVoter_Paused {
-    id: ID!
-    account: String!
-    contract: ContractData!
-}
-
-type SimpleGaugeVoter_Reset {
+type VoteReset {
     id: ID!
     voter: String!
     gauge: String!
@@ -78,22 +56,10 @@ type SimpleGaugeVoter_Reset {
     totalVotingPowerInGauge: BigInt!
     totalVotingPowerInContract: BigInt!
     timestamp: BigInt!
-    contract: ContractData!
+    contract: Contract!
 }
 
-type SimpleGaugeVoter_Unpaused {
-    id: ID!
-    account: String!
-    contract: ContractData!
-}
-
-type SimpleGaugeVoter_Upgraded {
-    id: ID!
-    implementation: String!
-    contract: ContractData!
-}
-
-type SimpleGaugeVoter_Voted {
+type Vote {
     id: ID!
     voter: String!
     gauge: String!
@@ -103,123 +69,89 @@ type SimpleGaugeVoter_Voted {
     totalVotingPowerInGauge: BigInt!
     totalVotingPowerInContract: BigInt!
     timestamp: BigInt!
-    contract: ContractData! @index
+    contract: Contract! @index
 }
 
-type VotingEscrowIncreasing_AdminChanged {
-    id: ID!
-    previousAdmin: String!
-    newAdmin: String!
-    contract: ContractData!
-}
-
-type VotingEscrowIncreasing_BeaconUpgraded {
-    id: ID!
-    beacon: String!
-    contract: ContractData!
-}
-
-type VotingEscrowIncreasing_Deposit {
+type Deposit {
     id: ID!
     depositor: String!
     tokenId: BigInt!
     startTs: BigInt!
     value: BigInt!
     newTotalLocked: BigInt!
-    contract: ContractData! @index
+    contract: Contract! @index
 }
 
-type VotingEscrowIncreasing_Initialized {
-    id: ID!
-    version: BigInt!
-    contract: ContractData!
-}
-
-type VotingEscrowIncreasing_MinDepositSet {
+type MinDepositSet {
     id: ID!
     minDeposit: BigInt!
-    contract: ContractData!
+    contract: Contract!
 }
 
-type VotingEscrowIncreasing_Paused {
-    id: ID!
-    account: String!
-    contract: ContractData!
-}
-
-type VotingEscrowIncreasing_Sweep {
-    id: ID!
-    to: String!
-    amount: BigInt!
-    contract: ContractData!
-}
-
-type VotingEscrowIncreasing_SweepNFT {
-    id: ID!
-    to: String!
-    tokenId: BigInt!
-    contract: ContractData!
-}
-
-type VotingEscrowIncreasing_Unpaused {
-    id: ID!
-    account: String!
-    contract: ContractData!
-}
-
-type VotingEscrowIncreasing_Upgraded {
-    id: ID!
-    implementation: String!
-    contract: ContractData!
-}
-
-type VotingEscrowIncreasing_Withdraw {
+type Withdraw {
     id: ID!
     depositor: String!
     tokenId: BigInt!
     value: BigInt!
     ts: BigInt!
     newTotalLocked: BigInt!
-    contract: ContractData!
+    contract: Contract!
 }
 
-type VotingEscrowIncreasing_AggregatedDepositDayData {
-    id: ID! # VotingEscrowAddress + "-" + dayId + "-" + chainId
+### Aggregation types
+#
+# Daily Metrics
+type EscrowDepositDailyMetrics {
+    id: ID! # escrowAddress + "-" + dayId + "-" + chainId
     date: Int! # timestamp rounded to current day by dividing by 86400
-    contract: ContractData!
+    contract: Contract!
     totalLocked: BigInt!
     amountOfLocks: BigInt!
 }
 
-type VotingEscrowIncreasing_AggregatedWithdrawDayData {
+type EscrowWithdrawDailyMetrics {
     id: ID! # VotingEscrowAddress + "-" + dayId + "-" + chainId
     date: Int! # timestamp rounded to current day by dividing by 86400
-    contract: ContractData!
+    contract: Contract!
     totalWithdraw: BigInt!
     amountOfWithdrawals: BigInt!
 }
 
-type VotingEscrowIncreasing_AggregatedDayData {
-    id: ID! # VotingEscrowAddress + "-" + dayId + "-" + chainId
+type EscrowDailyMetrics {
+    id: ID! # escrowAddress + "-" + dayId + "-" + chainId
     date: Int! # timestamp rounded to current day by dividing by 86400
-    contract: ContractData!
+    contract: Contract!
     totalLocked: BigInt!
     amountOfLocks: BigInt!
 }
 
-type AggregatedGaugeWithVotes {
-    id: ID! # SimpleGaugeVoterAddress + "-" + dayId + "-" + chainId
-    gauge: String! @index
-    totalVotingPowerInGauge: BigInt!
-    totalVoters: BigInt!
-    dayDataAggregation: SimpleGaugeVoter_Voted_AggregatedGaugeDayData!
+# Daily metrics for a specific gauge
+type GaugeDailyVotingMetrics {
+    id: ID! # gauge-plugin-dayId-chainId
+    contract: Contract!
+    date: Int! # timestamp rounded to current day by dividing by 86400
+    gauge: String!
+    totalVotingPower: BigInt!
+    voterCount: BigInt!
+    gaugePlugin: GaugePluginDailyVotingMetrics!
 }
 
-type SimpleGaugeVoter_Voted_AggregatedGaugeDayData {
-    id: ID! # SimpleGaugeVoterAddress + "-" + dayId + "-" + chainId
-    date: Int! # timestamp rounded to current day by dividing by 86400
-    contract: ContractData!
-    gauges: [AggregatedGaugeWithVotes!]!
-        @derivedFrom(field: "dayDataAggregation")
-    totalVotingPowerInContract: BigInt!
+# Daily metrics aggregated across all gauges
+type GaugePluginDailyVotingMetrics {
+    id: ID! # plugin-dayId-chainId
+    contract: Contract!
+    date: Int!
+    totalVotingPower: BigInt!
+    votesCount: BigInt!
+    gaugeMetrics: [GaugeDailyVotingMetrics!]! @derivedFrom(field: "gaugePlugin")
+}
+
+# Historical total metrics (all-time)
+type GaugePluginVotingMetrics {
+    id: ID! # plugin-chainId
+    contract: Contract!
+    allTimeVotingPower: BigInt!
+    allTimeVoterCount: BigInt!
+    allTimeVotesCount: BigInt!
+    lastUpdated: BigInt!
 }

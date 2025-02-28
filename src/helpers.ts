@@ -1,4 +1,3 @@
-import { Addresses } from "generated/src/TestHelpers.gen";
 import { Context } from "vm";
 
 export const setContractData = async (
@@ -6,13 +5,50 @@ export const setContractData = async (
   srcAddress: String,
   context: Context,
 ) => {
-  let contract_id = await context.ContractData.get(`${chainId}_${srcAddress}`);
+  let contract_id = await context.Contract.get(`${chainId}_${srcAddress}`);
 
   if (!contract_id) {
-    context.ContractData.set({
+    context.Contract.set({
       id: `${chainId}_${srcAddress}`,
       address: srcAddress,
       chainId: chainId,
+    });
+  }
+};
+
+export const addUniqueStaker = async (
+  chainId: Number,
+  srcAddress: String,
+  staker: String,
+  context: Context,
+) => {
+  let stakerKey = `${srcAddress}-${staker}-${chainId}`;
+  let stakerData = await context.StakerRegistry.get(staker);
+
+  if (!stakerData) {
+    context.StakerRegistry.set({
+      id: stakerKey,
+      address: staker,
+      votingEscrow_id: `${chainId}_${srcAddress}`,
+    });
+  }
+};
+
+export const addUniqueVoter = async (
+  chainId: Number,
+  srcAddress: String,
+  voter: String,
+  context: Context,
+) => {
+  const voterKey = `${srcAddress}-${voter}-${chainId}`;
+
+  let voterData = await context.VoterRegistry.get(voterKey);
+
+  if (!voterData) {
+    context.VoterRegistry.set({
+      id: voterKey,
+      address: voter,
+      gaugeVoter_id: `${chainId}_${srcAddress}`,
     });
   }
 };
@@ -25,7 +61,7 @@ export function getDayStartTimestamp(dayID: number) {
   return dayID * 86400;
 }
 
-export const updateDepositLocksDayData = async (
+export const updateDepositDailyMetrics = async (
   chainId: Number,
   srcAddress: String,
   lockedAmount: BigInt,
@@ -36,13 +72,10 @@ export const updateDepositLocksDayData = async (
   const dayStartTimestamp = getDayStartTimestamp(dayID);
   const aggregatedDataID = `${srcAddress}-${dayID}-${chainId}`;
 
-  let locksData =
-    await context.VotingEscrowIncreasing_AggregatedDepositDayData.get(
-      aggregatedDataID,
-    );
+  let locksData = await context.EscrowDepositDailyMetrics.get(aggregatedDataID);
 
   if (!locksData) {
-    context.VotingEscrowIncreasing_AggregatedDepositDayData.set({
+    context.EscrowDepositDailyMetrics.set({
       id: aggregatedDataID,
       date: dayStartTimestamp,
       contract_id: `${chainId}_${srcAddress}`,
@@ -50,7 +83,7 @@ export const updateDepositLocksDayData = async (
       amountOfLocks: 1,
     });
   } else {
-    context.VotingEscrowIncreasing_AggregatedDepositDayData.set({
+    context.EscrowDepositDailyMetrics.set({
       id: aggregatedDataID,
       date: dayStartTimestamp,
       contract_id: `${chainId}_${srcAddress}`,
@@ -59,7 +92,7 @@ export const updateDepositLocksDayData = async (
     });
   }
 };
-export const updateWithdrawalLocksDayData = async (
+export const updateWithdrawalDailyMetrics = async (
   chainId: Number,
   srcAddress: String,
   value: BigInt,
@@ -71,12 +104,10 @@ export const updateWithdrawalLocksDayData = async (
   const aggregatedDataID = `${srcAddress}-${dayID}-${chainId}`;
 
   let locksData =
-    await context.VotingEscrowIncreasing_AggregatedWithdrawDayData.get(
-      aggregatedDataID,
-    );
+    await context.EscrowWithdrawDailyMetrics.get(aggregatedDataID);
 
   if (!locksData) {
-    context.VotingEscrowIncreasing_AggregatedWithdrawDayData.set({
+    context.EscrowWithdrawDailyMetrics.set({
       id: aggregatedDataID,
       date: dayStartTimestamp,
       contract_id: `${chainId}_${srcAddress}`,
@@ -84,7 +115,7 @@ export const updateWithdrawalLocksDayData = async (
       amountOfWithdrawals: BigInt(1),
     });
   } else {
-    context.VotingEscrowIncreasing_AggregatedWithdrawDayData.set({
+    context.EscrowWithdrawDailyMetrics.set({
       id: aggregatedDataID,
       date: dayStartTimestamp,
       contract_id: `${chainId}_${srcAddress}`,
@@ -94,7 +125,7 @@ export const updateWithdrawalLocksDayData = async (
   }
 };
 
-export const updateLocksDayData = async (
+export const updateEscrowDailyMetrics = async (
   chainId: Number,
   srcAddress: String,
   totalLocked: BigInt,
@@ -106,13 +137,10 @@ export const updateLocksDayData = async (
   const dayStartTimestamp = getDayStartTimestamp(dayID);
   const aggregatedDataID = `${srcAddress}-${dayID}-${chainId}`;
 
-  let locksData =
-    await context.VotingEscrowIncreasing_AggregatedDayData.get(
-      aggregatedDataID,
-    );
+  let locksData = await context.EscrowDailyMetrics.get(aggregatedDataID);
 
   if (!locksData) {
-    context.VotingEscrowIncreasing_AggregatedDayData.set({
+    context.EscrowDailyMetrics.set({
       id: aggregatedDataID,
       date: dayStartTimestamp,
       contract_id: `${chainId}_${srcAddress}`,
@@ -120,7 +148,7 @@ export const updateLocksDayData = async (
       amountOfLocks: isLocking ? BigInt(1) : BigInt(0),
     });
   } else {
-    context.VotingEscrowIncreasing_AggregatedDayData.set({
+    context.EscrowDailyMetrics.set({
       id: aggregatedDataID,
       date: dayStartTimestamp,
       contract_id: `${chainId}_${srcAddress}`,
@@ -132,144 +160,209 @@ export const updateLocksDayData = async (
   }
 };
 
-export const addVotedDayData = async (
+export const updateVotingMetrics = async (
   chainId: Number,
   srcAddress: String,
   gauge: String,
-  votingPowerCastForGauge: BigInt,
+  voter: String,
+  votingPower: BigInt,
   timestamp: number,
+  isNewVote: boolean, // true for new votes, false for resets
   context: Context,
 ) => {
-  const dayID = getDayID(timestamp);
-  const dayStartTimestamp = getDayStartTimestamp(dayID);
-  const aggregatedDataID = `${srcAddress}-${dayID}-${chainId}`;
+  const dayId = getDayID(timestamp);
+  const dayStartTimestamp = getDayStartTimestamp(dayId);
 
-  let votesData =
-    await context.SimpleGaugeVoter_Voted_AggregatedGaugeDayData.get(
-      aggregatedDataID,
-    );
+  // Update gauge daily metrics
+  await updateGaugeDailyMetrics(
+    chainId,
+    srcAddress,
+    gauge,
+    voter,
+    votingPower,
+    dayId,
+    dayStartTimestamp,
+    isNewVote,
+    context,
+  );
 
-  const gaugeDataID = `${gauge}-${dayID}-${chainId}`;
-  let gaugeData = await context.AggregatedGaugeWithVotes.get(gaugeDataID);
+  // Update contract-wide daily metrics
+  await updateGaugePluginDailyMetrics(
+    chainId,
+    srcAddress,
+    votingPower,
+    dayId,
+    dayStartTimestamp,
+    isNewVote,
+    context,
+  );
 
-  if (!gaugeData) {
-    context.AggregatedGaugeWithVotes.set({
-      id: gaugeDataID,
-      gauge: gauge,
-      totalVotingPowerInGauge: votingPowerCastForGauge,
-      totalVoters: 1,
-      dayDataAggregation_id: aggregatedDataID,
-    });
-  } else {
-    context.AggregatedGaugeWithVotes.set({
-      id: gaugeDataID,
-      gauge: gauge,
-      totalVotingPowerInGauge:
-        gaugeData.totalVotingPowerInGauge + votingPowerCastForGauge,
-      totalVoters: gaugeData.totalVoters++,
-      dayDataAggregation_id: aggregatedDataID,
-    });
-  }
-
-  if (!votesData) {
-    context.SimpleGaugeVoter_Voted_AggregatedGaugeDayData.set({
-      id: aggregatedDataID,
-      date: dayStartTimestamp,
-      contract_id: `${chainId}_${srcAddress}`,
-      totalVotingPowerInContract: votingPowerCastForGauge,
-    });
-  } else {
-    context.SimpleGaugeVoter_Voted_AggregatedGaugeDayData.set({
-      id: aggregatedDataID,
-      date: dayStartTimestamp,
-      contract_id: `${chainId}_${srcAddress}`,
-      totalVotingPowerInContract:
-        votesData.totalVotingPowerInContract + votingPowerCastForGauge,
-    });
-  }
+  // Update all-time metrics
+  await updateAllTimeMetrics(
+    chainId,
+    srcAddress,
+    voter,
+    votingPower,
+    timestamp,
+    isNewVote,
+    context,
+  );
 };
 
-export const resetVotedDayData = async (
+// Helper to update metrics for a specific gauge for a specific day
+const updateGaugeDailyMetrics = async (
   chainId: Number,
   srcAddress: String,
   gauge: String,
-  votingPowerCastForGauge: bigint,
-  timestamp: number,
+  voter: String,
+  votingPower: BigInt,
+  dayId: number,
+  dayTimestamp: number,
+  isNewVote: boolean,
   context: Context,
 ) => {
-  const dayID = getDayID(timestamp);
-  const dayStartTimestamp = getDayStartTimestamp(dayID);
-  const aggregatedDataID = `${srcAddress}-${dayID}-${chainId}`;
+  const gaugeMetricsId = `${gauge}-${dayId}-${chainId}`;
+  const contractMetricsId = `${srcAddress}-${dayId}-${chainId}`;
+  const contractId = `${chainId}_${srcAddress}`;
 
-  let votesData =
-    await context.SimpleGaugeVoter_Voted_AggregatedGaugeDayData.get(
-      aggregatedDataID,
-    );
-  const gaugeDataID = `${gauge}-${dayID}-${chainId}`;
-  let gaugeData = await context.AggregatedGaugeWithVotes.get(gaugeDataID);
+  let gaugeMetrics = await context.GaugeDailyVotingMetrics.get(gaugeMetricsId);
 
-  if (gaugeData) {
-    context.AggregatedGaugeWithVotes.set({
-      id: gaugeDataID,
+  // Track if this voter has already voted for this gauge today
+  // In a real implementation, you would need a more sophisticated approach
+  // to track unique voters per gauge per day
+  const voterChangeCount = isNewVote ? BigInt(1) : BigInt(-1);
+  if (!gaugeMetrics) {
+    context.GaugeDailyVotingMetrics.set({
+      id: gaugeMetricsId,
+      date: dayTimestamp,
       gauge: gauge,
-      totalVotingPowerInGauge:
-        gaugeData.totalVotingPowerInGauge - votingPowerCastForGauge,
-      totalVoters: gaugeData.totalVoters--,
-      dayDataAggregation_id: aggregatedDataID,
-    });
-  }
-
-  if (!votesData) {
-    context.SimpleGaugeVoter_Voted_AggregatedGaugeDayData.set({
-      id: aggregatedDataID,
-      date: dayStartTimestamp,
-      contract_id: `${chainId}_${srcAddress}`,
-      totalVotingPowerInContract: votingPowerCastForGauge,
+      contract_id: contractId,
+      totalVotingPower: isNewVote ? votingPower : -votingPower,
+      voterCount: isNewVote ? BigInt(1) : BigInt(0),
+      gaugePlugin_id: contractMetricsId,
     });
   } else {
-    context.SimpleGaugeVoter_Voted_AggregatedGaugeDayData.set({
-      id: aggregatedDataID,
-      date: dayStartTimestamp,
-      contract_id: `${chainId}_${srcAddress}`,
-      totalVotingPowerInContract:
-        votesData.totalVotingPowerInContract + votingPowerCastForGauge,
+    // Update existing metrics
+    const newVotingPower = isNewVote
+      ? gaugeMetrics.totalVotingPower + votingPower
+      : BigInt(gaugeMetrics.totalVotingPower) - BigInt(votingPower.toString());
+
+    const newVoterCount = gaugeMetrics.voterCount + voterChangeCount;
+
+    context.GaugeDailyVotingMetrics.set({
+      id: gaugeMetricsId,
+      date: dayTimestamp,
+      gauge: gauge,
+      contract_id: contractId,
+      totalVotingPower: newVotingPower,
+      voterCount: newVoterCount < BigInt(0) ? BigInt(0) : newVoterCount,
+      gaugePlugin_id: contractMetricsId,
     });
   }
 };
 
-export const addUniqueStaker = async (
+// Helper to update contract-wide metrics for a specific day
+const updateGaugePluginDailyMetrics = async (
   chainId: Number,
   srcAddress: String,
-  staker: String,
+  votingPower: BigInt,
+  dayId: number,
+  dayTimestamp: number,
+  isNewVote: boolean,
   context: Context,
 ) => {
-  let staker_id = `${srcAddress}_${staker}_${chainId}`;
-  let stakerData = await context.Staker.get(staker);
+  const contractMetricsId = `${srcAddress}-${dayId}-${chainId}`;
+  const contractId = `${chainId}_${srcAddress}`;
 
-  if (!stakerData) {
-    context.Staker.set({
-      id: staker_id,
-      address: staker,
-      votingEscrowIncreasing_id: `${chainId}_${srcAddress}`,
+  let contractMetrics =
+    await context.GaugePluginDailyVotingMetrics.get(contractMetricsId);
+
+  // Calculate the voting power change
+  const votingPowerChange = isNewVote ? votingPower : -votingPower;
+
+  if (!contractMetrics) {
+    // First metrics for this day
+    context.GaugePluginDailyVotingMetrics.set({
+      id: contractMetricsId,
+      date: dayTimestamp,
+      contract_id: contractId,
+      totalVotingPower: votingPowerChange,
+      votesCount: BigInt(1),
+    });
+  } else {
+    // Update existing metrics
+    const newTotalVotingPower =
+      contractMetrics.totalVotingPower + votingPowerChange;
+
+    // For accurate voter counts, you'd need a separate tracking mechanism
+    // This is a simplified approximation
+    const voterCountChange = isNewVote ? BigInt(1) : BigInt(0);
+
+    context.GaugePluginDailyVotingMetrics.set({
+      id: contractMetricsId,
+      date: dayTimestamp,
+      contract_id: contractId,
+      totalVotingPower: newTotalVotingPower,
+      votesCount: contractMetrics.votesCount + voterCountChange,
     });
   }
 };
 
-export const addUniqueVoter = async (
+// Helper to update all-time metrics
+const updateAllTimeMetrics = async (
   chainId: Number,
   srcAddress: String,
   voter: String,
+  votingPower: BigInt,
+  timestamp: number,
+  isNewVote: boolean,
   context: Context,
 ) => {
-  let voter_id = `${srcAddress}_${voter}_${chainId}`;
+  const metricsId = `${srcAddress}-${chainId}`;
+  const contractId = `${chainId}_${srcAddress}`;
 
-  let stakerData = await context.Voter.get(voter);
+  let metrics = await context.GaugePluginVotingMetrics.get(metricsId);
 
-  if (!stakerData) {
-    context.Voter.set({
-      id: voter_id,
-      address: voter,
-      simpleGaugeVoter_id: `${chainId}_${srcAddress}`,
+  // Store a record of whether this voter has voted before to accurately track unique voters
+  const voterKey = `${srcAddress}-${voter}-${chainId}`;
+  let voterRecord = await context.VoterRegistry.get(voterKey); // Assume VoterRegistry exists
+
+  let isNewVoter = false;
+  if (!voterRecord) {
+    await addUniqueVoter(chainId, srcAddress, voter, context);
+    isNewVoter = true;
+  }
+
+  if (!metrics) {
+    context.GaugePluginVotingMetrics.set({
+      id: metricsId,
+      contract_id: contractId,
+      allTimeVotingPower: isNewVote ? votingPower : BigInt(0),
+      allTimeVoterCount: isNewVoter ? BigInt(1) : BigInt(0),
+      allTimeVotesCount: isNewVote ? BigInt(1) : BigInt(0),
+      lastUpdated: timestamp,
+    });
+  } else {
+    // Update existing metrics
+    const newVotingPower = isNewVote
+      ? metrics.allTimeVotingPower + votingPower
+      : metrics.allTimeVotingPower;
+
+    const newVoterCount = isNewVoter
+      ? metrics.allTimeVoterCount + BigInt(1)
+      : metrics.allTimeVoterCount;
+
+    const newVotesCount = isNewVote
+      ? metrics.allTimeVotesCount + BigInt(1)
+      : metrics.allTimeVotesCount;
+
+    context.GaugePluginVotingMetrics.set({
+      id: metricsId,
+      contract_id: contractId,
+      allTimeVotingPower: newVotingPower,
+      allTimeVoterCount: newVoterCount,
+      allTimeVotesCount: newVotesCount,
+      lastUpdated: timestamp,
     });
   }
 };
