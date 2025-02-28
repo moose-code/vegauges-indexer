@@ -139,6 +139,7 @@ type EscrowLocksMetrics {
     contract: Contract!
     totalLocked: BigInt!
     amountOfLocks: BigInt!
+    totalLockers: BigInt!
 }
 
 # Daily metrics for a specific gauge
