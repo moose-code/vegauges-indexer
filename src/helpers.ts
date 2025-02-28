@@ -163,6 +163,7 @@ export const updateEscrowDailyMetrics = async (
 export const updateEscrowLocksMetrics = async (
   chainId: Number,
   srcAddress: String,
+  staker: String,
   totalLocked: BigInt,
   timestamp: number,
   isLocking: boolean,
@@ -174,6 +175,15 @@ export const updateEscrowLocksMetrics = async (
 
   let locksData = await context.EscrowLocksMetrics.get(aggregatedDataID);
 
+  const stakerKey = `${srcAddress}-${staker}-${chainId}`;
+  let stakerRecord = await context.VoterRegistry.get(stakerKey); // Assume VoterRegistry exists
+
+  let isNewStaker = false;
+  if (!stakerRecord) {
+    await addUniqueVoter(chainId, srcAddress, staker, context);
+    isNewStaker = true;
+  }
+
   if (!locksData) {
     context.EscrowLocksMetrics.set({
       id: aggregatedDataID,
@@ -181,6 +191,7 @@ export const updateEscrowLocksMetrics = async (
       contract_id: `${chainId}-${srcAddress}`,
       totalLocked: totalLocked,
       amountOfLocks: isLocking ? BigInt(1) : BigInt(0),
+      totalLockers: isNewStaker ? BigInt(1) : BigInt(0),
     });
   } else {
     context.EscrowLocksMetrics.set({
@@ -191,6 +202,9 @@ export const updateEscrowLocksMetrics = async (
       amountOfLocks: isLocking
         ? locksData.amountOfLocks++
         : locksData.amountOfLocks--,
+      totalLockers: isNewStaker
+        ? locksData.totalLockers++
+        : locksData.totalLockers,
     });
   }
 };

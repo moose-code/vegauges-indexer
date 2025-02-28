@@ -17,11 +17,13 @@ ExitQueue.ExitQueued.handler(async ({ event, context }) => {
     exitDate: event.params.exitDate,
   };
 
+  context.ExitQueued.set(entity);
+
   updateExitQueueDailyMetrics(
     event.chainId,
     votingEscrowAddress,
     event.params.tokenId,
-    Number(event.params.exitDate),
+    event.params.exitDate,
     context,
   );
 });
@@ -30,10 +32,10 @@ const updateExitQueueDailyMetrics = async (
   chainId: Number,
   votingEscrow: String,
   tokenId: BigInt,
-  exitDate: number,
+  exitDate: BigInt,
   context: Context,
 ) => {
-  const dayID = getDayID(exitDate);
+  const dayID = getDayID(Number(exitDate));
   const dayStartTimestamp = getDayStartTimestamp(dayID);
   const aggregatedDataID = `${votingEscrow}-${dayID}-${chainId}`;
 
@@ -44,30 +46,36 @@ const updateExitQueueDailyMetrics = async (
     `${tokenId}_${votingEscrow}_${chainId}`,
   );
 
+  if (!lock) {
+    throw new Error(`Deposit not found for tokenId ${tokenId}`);
+  }
+
   if (!exitQueueData) {
-    context.ExitQueueDailyMetrics.set({
+    const newExitQueueData = {
       id: aggregatedDataID,
-      date: dayStartTimestamp,
       contract_id: `${chainId}-${votingEscrow}`,
-      amountOfExits: 1,
+      date: dayStartTimestamp,
+      amountOfExits: BigInt(1),
       totalTokens: lock.value,
-    });
+    };
+    context.ExitQueueDailyMetrics.set(newExitQueueData);
   } else {
-    context.ExitQueueDailyMetrics.set({
+    const updatedExitQueueData = {
       id: aggregatedDataID,
-      date: dayStartTimestamp,
       contract_id: `${chainId}-${votingEscrow}`,
-      amountOfExits: exitQueueData.amountOfExits++,
+      date: dayStartTimestamp,
+      amountOfExits: exitQueueData.amountOfExits + BigInt(1),
       totalTokens: exitQueueData.totalTokens + lock.value,
-    });
+    };
+    context.ExitQueueDailyMetrics.set(updatedExitQueueData);
   }
 };
 
-const votingEscrow = (exitQueue: String) => {
-  return getVotingEscrowAddressFromExitQueue[
-    exitQueue.toString() as keyof typeof getVotingEscrowAddressFromExitQueue
+const votingEscrow = (exitQueue: string): String =>
+  getVotingEscrowAddressFromExitQueue[
+    exitQueue as keyof typeof getVotingEscrowAddressFromExitQueue
   ];
-};
+
 const getVotingEscrowAddressFromExitQueue = {
   "0x915e50A7C53e05F72122bC883309a812A90bA163":
     "0xff8AB822b8A853b01F9a9E9465321d6Fe77c9D2F",
