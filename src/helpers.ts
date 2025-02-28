@@ -5,11 +5,11 @@ export const setContractData = async (
   srcAddress: String,
   context: Context,
 ) => {
-  let contract_id = await context.Contract.get(`${chainId}_${srcAddress}`);
+  let contract_id = await context.Contract.get(`${chainId}-${srcAddress}`);
 
   if (!contract_id) {
     context.Contract.set({
-      id: `${chainId}_${srcAddress}`,
+      id: `${chainId}-${srcAddress}`,
       address: srcAddress,
       chainId: chainId,
     });
@@ -29,7 +29,7 @@ export const addUniqueStaker = async (
     context.StakerRegistry.set({
       id: stakerKey,
       address: staker,
-      votingEscrow_id: `${chainId}_${srcAddress}`,
+      votingEscrow_id: `${chainId}-${srcAddress}`,
     });
   }
 };
@@ -48,7 +48,7 @@ export const addUniqueVoter = async (
     context.VoterRegistry.set({
       id: voterKey,
       address: voter,
-      gaugeVoter_id: `${chainId}_${srcAddress}`,
+      gaugeVoter_id: `${chainId}-${srcAddress}`,
     });
   }
 };
@@ -78,7 +78,7 @@ export const updateDepositDailyMetrics = async (
     context.EscrowDepositDailyMetrics.set({
       id: aggregatedDataID,
       date: dayStartTimestamp,
-      contract_id: `${chainId}_${srcAddress}`,
+      contract_id: `${chainId}-${srcAddress}`,
       totalLocked: lockedAmount,
       amountOfLocks: 1,
     });
@@ -86,7 +86,7 @@ export const updateDepositDailyMetrics = async (
     context.EscrowDepositDailyMetrics.set({
       id: aggregatedDataID,
       date: dayStartTimestamp,
-      contract_id: `${chainId}_${srcAddress}`,
+      contract_id: `${chainId}-${srcAddress}`,
       totalLocked: locksData.totalLocked + lockedAmount,
       amountOfLocks: locksData.amountOfLocks++,
     });
@@ -110,7 +110,7 @@ export const updateWithdrawalDailyMetrics = async (
     context.EscrowWithdrawDailyMetrics.set({
       id: aggregatedDataID,
       date: dayStartTimestamp,
-      contract_id: `${chainId}_${srcAddress}`,
+      contract_id: `${chainId}-${srcAddress}`,
       totalWithdraw: value,
       amountOfWithdrawals: BigInt(1),
     });
@@ -143,7 +143,7 @@ export const updateEscrowDailyMetrics = async (
     context.EscrowDailyMetrics.set({
       id: aggregatedDataID,
       date: dayStartTimestamp,
-      contract_id: `${chainId}_${srcAddress}`,
+      contract_id: `${chainId}-${srcAddress}`,
       totalLocked: totalLocked,
       amountOfLocks: isLocking ? BigInt(1) : BigInt(0),
     });
@@ -151,7 +151,7 @@ export const updateEscrowDailyMetrics = async (
     context.EscrowDailyMetrics.set({
       id: aggregatedDataID,
       date: dayStartTimestamp,
-      contract_id: `${chainId}_${srcAddress}`,
+      contract_id: `${chainId}-${srcAddress}`,
       totalLocked: totalLocked,
       amountOfLocks: isLocking
         ? locksData.amountOfLocks++
@@ -223,7 +223,7 @@ const updateGaugeDailyMetrics = async (
 ) => {
   const gaugeMetricsId = `${gauge}-${dayId}-${chainId}`;
   const contractMetricsId = `${srcAddress}-${dayId}-${chainId}`;
-  const contractId = `${chainId}_${srcAddress}`;
+  const contractId = `${chainId}-${srcAddress}`;
 
   let gaugeMetrics = await context.GaugeDailyVotingMetrics.get(gaugeMetricsId);
 
@@ -272,7 +272,7 @@ const updateGaugePluginDailyMetrics = async (
   context: Context,
 ) => {
   const contractMetricsId = `${srcAddress}-${dayId}-${chainId}`;
-  const contractId = `${chainId}_${srcAddress}`;
+  const contractId = `${chainId}-${srcAddress}`;
 
   let contractMetrics =
     await context.GaugePluginDailyVotingMetrics.get(contractMetricsId);
@@ -319,7 +319,7 @@ const updateAllTimeMetrics = async (
   context: Context,
 ) => {
   const metricsId = `${srcAddress}-${chainId}`;
-  const contractId = `${chainId}_${srcAddress}`;
+  const contractId = `${chainId}-${srcAddress}`;
 
   let metrics = await context.GaugePluginVotingMetrics.get(metricsId);
 

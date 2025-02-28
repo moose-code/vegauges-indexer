@@ -9,7 +9,12 @@ import {
   updateDepositDailyMetrics,
   addUniqueStaker,
   updateEscrowDailyMetrics,
+  setContractData,
 } from "./helpers";
+
+VotingEscrowIncreasing.Initialized.handler(async ({ event, context }) => {
+  setContractData(event.chainId, event.srcAddress, context);
+});
 
 VotingEscrowIncreasing.Deposit.handler(async ({ event, context }) => {
   const entity: Deposit = {
@@ -19,7 +24,7 @@ VotingEscrowIncreasing.Deposit.handler(async ({ event, context }) => {
     startTs: event.params.startTs,
     value: event.params.value,
     newTotalLocked: event.params.newTotalLocked,
-    contract_id: `${event.chainId}_${event.srcAddress}`,
+    contract_id: `${event.chainId}-${event.srcAddress}`,
   };
 
   context.Deposit.set(entity);
@@ -52,7 +57,7 @@ VotingEscrowIncreasing.MinDepositSet.handler(async ({ event, context }) => {
   const entity: MinDepositSet = {
     id: `${event.chainId}_${event.block.number}_${event.logIndex}`,
     minDeposit: event.params.minDeposit,
-    contract_id: `${event.chainId}_${event.srcAddress}`,
+    contract_id: `${event.chainId}-${event.srcAddress}`,
   };
 
   context.MinDepositSet.set(entity);
@@ -66,7 +71,7 @@ VotingEscrowIncreasing.Withdraw.handler(async ({ event, context }) => {
     value: event.params.value,
     ts: event.params.ts,
     newTotalLocked: event.params.newTotalLocked,
-    contract_id: `${event.chainId}_${event.srcAddress}`,
+    contract_id: `${event.chainId}-${event.srcAddress}`,
   };
 
   context.Withdraw.set(entity);
