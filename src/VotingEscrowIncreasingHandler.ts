@@ -17,8 +17,13 @@ VotingEscrowIncreasing.Initialized.handler(async ({ event, context }) => {
 });
 
 VotingEscrowIncreasing.Deposit.handler(async ({ event, context }) => {
+  if (event.params.tokenId === BigInt(304)) {
+    console.log("Token ID is 304");
+    console.log(`Exit Queue is: ${event.srcAddress}`);
+    console.log(`Chain id: ${event.chainId}`);
+  }
   const entity: Deposit = {
-    id: `${event.chainId}_${event.block.number}_${event.logIndex}`,
+    id: `${event.params.tokenId}_${event.srcAddress}_${event.chainId}`,
     depositor: event.params.depositor,
     tokenId: event.params.tokenId,
     startTs: event.params.startTs,

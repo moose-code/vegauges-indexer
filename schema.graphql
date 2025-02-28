@@ -98,6 +98,14 @@ type Withdraw {
     contract: Contract!
 }
 
+type ExitQueued {
+    id: ID!
+    contract: Contract!
+    tokenId: BigInt!
+    holder: String!
+    exitDate: BigInt!
+}
+
 ### Aggregation types
 #
 # Daily Metrics
@@ -154,4 +162,12 @@ type GaugePluginVotingMetrics {
     allTimeVoterCount: BigInt!
     allTimeVotesCount: BigInt!
     lastUpdated: BigInt!
+}
+
+type ExitQueueDailyMetrics {
+    id: ID! # exitQueue-dayId-chainId
+    contract: Contract!
+    date: Int!
+    amountOfExits: BigInt!
+    totalTokens: BigInt!
 }

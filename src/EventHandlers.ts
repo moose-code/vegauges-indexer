@@ -1,2 +1,3 @@
-import './SimpleGaugeVoterHandler'
-import './VotingEscrowIncreasingHandler'
+import "./SimpleGaugeVoterHandler";
+import "./VotingEscrowIncreasingHandler";
+import "./ExitQueue";
