@@ -10,6 +10,7 @@ import {
   addUniqueStaker,
   updateEscrowDailyMetrics,
   setContractData,
+  updateEscrowLocksMetrics,
 } from "./helpers";
 
 VotingEscrowIncreasing.Initialized.handler(async ({ event, context }) => {
@@ -34,6 +35,12 @@ VotingEscrowIncreasing.Deposit.handler(async ({ event, context }) => {
 
   context.Deposit.set(entity);
 
+  await addUniqueStaker(
+    event.chainId,
+    event.srcAddress,
+    event.params.depositor,
+    context,
+  );
   await updateDepositDailyMetrics(
     event.chainId,
     event.srcAddress,
@@ -50,10 +57,12 @@ VotingEscrowIncreasing.Deposit.handler(async ({ event, context }) => {
     context,
   );
 
-  await addUniqueStaker(
+  await updateEscrowLocksMetrics(
     event.chainId,
     event.srcAddress,
-    event.params.depositor,
+    event.params.newTotalLocked,
+    Number(event.params.startTs),
+    true,
     context,
   );
 });
@@ -89,6 +98,15 @@ VotingEscrowIncreasing.Withdraw.handler(async ({ event, context }) => {
     context,
   );
   await updateEscrowDailyMetrics(
+    event.chainId,
+    event.srcAddress,
+    event.params.newTotalLocked,
+    Number(event.params.ts),
+    false,
+    context,
+  );
+
+  await updateEscrowLocksMetrics(
     event.chainId,
     event.srcAddress,
     event.params.newTotalLocked,

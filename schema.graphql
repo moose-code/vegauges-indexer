@@ -133,6 +133,14 @@ type EscrowDailyMetrics {
     amountOfLocks: BigInt!
 }
 
+type EscrowLocksMetrics {
+    id: ID! # escrowAddress + "-" + dayId + "-" + chainId
+    date: Int! # timestamp rounded to current day by dividing by 86400
+    contract: Contract!
+    totalLocked: BigInt!
+    amountOfLocks: BigInt!
+}
+
 # Daily metrics for a specific gauge
 type GaugeDailyVotingMetrics {
     id: ID! # gauge-plugin-dayId-chainId

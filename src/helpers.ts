@@ -160,6 +160,41 @@ export const updateEscrowDailyMetrics = async (
   }
 };
 
+export const updateEscrowLocksMetrics = async (
+  chainId: Number,
+  srcAddress: String,
+  totalLocked: BigInt,
+  timestamp: number,
+  isLocking: boolean,
+  context: Context,
+) => {
+  const dayID = getDayID(timestamp);
+  const dayStartTimestamp = getDayStartTimestamp(dayID);
+  const aggregatedDataID = `${srcAddress}-${dayID}-${chainId}`;
+
+  let locksData = await context.EscrowLocksMetrics.get(aggregatedDataID);
+
+  if (!locksData) {
+    context.EscrowLocksMetrics.set({
+      id: aggregatedDataID,
+      date: dayStartTimestamp,
+      contract_id: `${chainId}-${srcAddress}`,
+      totalLocked: totalLocked,
+      amountOfLocks: isLocking ? BigInt(1) : BigInt(0),
+    });
+  } else {
+    context.EscrowLocksMetrics.set({
+      id: aggregatedDataID,
+      date: dayStartTimestamp,
+      contract_id: `${chainId}-${srcAddress}`,
+      totalLocked: totalLocked,
+      amountOfLocks: isLocking
+        ? locksData.amountOfLocks++
+        : locksData.amountOfLocks--,
+    });
+  }
+};
+
 export const updateVotingMetrics = async (
   chainId: Number,
   srcAddress: String,
