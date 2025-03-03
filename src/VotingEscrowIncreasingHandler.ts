@@ -1,3 +1,4 @@
+import { Context } from "vm";
 import {
   VotingEscrowIncreasing,
   Deposit,
@@ -12,6 +13,7 @@ import {
   setContractData,
   updateEscrowLocksMetrics,
 } from "./helpers";
+import { EOF } from "dns";
 
 VotingEscrowIncreasing.Initialized.handler(async ({ event, context }) => {
   setContractData(event.chainId, event.srcAddress, context);
@@ -25,6 +27,7 @@ VotingEscrowIncreasing.Deposit.handler(async ({ event, context }) => {
     startTs: event.params.startTs,
     value: event.params.value,
     newTotalLocked: event.params.newTotalLocked,
+    active: true,
     contract_id: `${event.chainId}-${event.srcAddress}`,
   };
 
@@ -86,6 +89,13 @@ VotingEscrowIncreasing.Withdraw.handler(async ({ event, context }) => {
 
   context.Withdraw.set(entity);
 
+  await setLockActiveStatusToInactive(
+    event.chainId,
+    event.srcAddress,
+    event.params.tokenId,
+    context,
+  );
+
   await updateWithdrawalDailyMetrics(
     event.chainId,
     event.srcAddress,
@@ -112,3 +122,26 @@ VotingEscrowIncreasing.Withdraw.handler(async ({ event, context }) => {
     context,
   );
 });
+
+// Function to set Lock active status as false
+async function setLockActiveStatusToInactive(
+  chainId: number,
+  srcAddress: string,
+  tokenId: BigInt,
+  context: Context,
+) {
+  const depositId = `${tokenId}_${srcAddress}_${chainId}`;
+  const deposit = await context.Deposit.get(depositId);
+  const entity: Deposit = {
+    id: depositId,
+    depositor: deposit.depositor,
+    tokenId: deposit.tokenId,
+    startTs: deposit.startTs,
+    value: deposit.value,
+    newTotalLocked: deposit.newTotalLocked,
+    active: false,
+    contract_id: deposit.contract_id,
+  };
+
+  context.Deposit.set(entity);
+}

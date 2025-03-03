@@ -79,6 +79,7 @@ type Deposit {
     startTs: BigInt!
     value: BigInt!
     newTotalLocked: BigInt!
+    active: Boolean!
     contract: Contract! @index
 }
 
