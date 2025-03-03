@@ -28,6 +28,7 @@ VotingEscrowIncreasing.Deposit.handler(async ({ event, context }) => {
     value: event.params.value,
     newTotalLocked: event.params.newTotalLocked,
     active: true,
+    withdrawalTime: undefined,
     contract_id: `${event.chainId}-${event.srcAddress}`,
   };
 
@@ -93,6 +94,7 @@ VotingEscrowIncreasing.Withdraw.handler(async ({ event, context }) => {
     event.chainId,
     event.srcAddress,
     event.params.tokenId,
+    event.params.ts,
     context,
   );
 
@@ -128,6 +130,7 @@ async function setLockActiveStatusToInactive(
   chainId: number,
   srcAddress: string,
   tokenId: BigInt,
+  withdrawalTime: bigint,
   context: Context,
 ) {
   const depositId = `${tokenId}_${srcAddress}_${chainId}`;
@@ -140,6 +143,7 @@ async function setLockActiveStatusToInactive(
     value: deposit.value,
     newTotalLocked: deposit.newTotalLocked,
     active: false,
+    withdrawalTime: withdrawalTime,
     contract_id: deposit.contract_id,
   };
 

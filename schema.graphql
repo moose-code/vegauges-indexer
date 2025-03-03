@@ -80,6 +80,7 @@ type Deposit {
     value: BigInt!
     newTotalLocked: BigInt!
     active: Boolean!
+    withdrawalTime: BigInt
     contract: Contract! @index
 }
 
