@@ -80,7 +80,7 @@ export const updateDepositDailyMetrics = async (
       date: dayStartTimestamp,
       contract_id: `${chainId}-${srcAddress}`,
       totalLocked: lockedAmount,
-      amountOfLocks: 1,
+      amountOfLocks: BigInt(1),
     });
   } else {
     context.EscrowDepositDailyMetrics.set({
@@ -88,7 +88,7 @@ export const updateDepositDailyMetrics = async (
       date: dayStartTimestamp,
       contract_id: `${chainId}-${srcAddress}`,
       totalLocked: locksData.totalLocked + lockedAmount,
-      amountOfLocks: locksData.amountOfLocks++,
+      amountOfLocks: locksData.amountOfLocks + BigInt(1),
     });
   }
 };
@@ -120,7 +120,7 @@ export const updateWithdrawalDailyMetrics = async (
       date: dayStartTimestamp,
       contract_id: `${chainId}_${srcAddress}`,
       totalWithdraw: locksData.totalWithdraw + value,
-      amountOfWithdrawals: locksData.amountOfWithdrawals++,
+      amountOfWithdrawals: locksData.amountOfWithdrawals + BigInt(1),
     });
   }
 };
@@ -154,8 +154,8 @@ export const updateEscrowDailyMetrics = async (
       contract_id: `${chainId}-${srcAddress}`,
       totalLocked: totalLocked,
       amountOfLocks: isLocking
-        ? locksData.amountOfLocks++
-        : locksData.amountOfLocks--,
+        ? locksData.amountOfLocks + BigInt(1)
+        : locksData.amountOfLocks - BigInt(1),
     });
   }
 };
@@ -200,10 +200,10 @@ export const updateEscrowLocksMetrics = async (
       contract_id: `${chainId}-${srcAddress}`,
       totalLocked: totalLocked,
       amountOfLocks: isLocking
-        ? locksData.amountOfLocks++
-        : locksData.amountOfLocks--,
+        ? locksData.amountOfLocks + BigInt(1)
+        : locksData.amountOfLocks - BigInt(1),
       totalLockers: isNewStaker
-        ? locksData.totalLockers++
+        ? locksData.totalLockers + BigInt(1)
         : locksData.totalLockers,
     });
   }
