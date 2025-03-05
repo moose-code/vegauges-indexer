@@ -118,7 +118,7 @@ export const updateWithdrawalDailyMetrics = async (
     context.EscrowWithdrawDailyMetrics.set({
       id: aggregatedDataID,
       date: dayStartTimestamp,
-      contract_id: `${chainId}_${srcAddress}`,
+      contract_id: `${chainId}-${srcAddress}`,
       totalWithdraw: locksData.totalWithdraw + value,
       amountOfWithdrawals: locksData.amountOfWithdrawals + BigInt(1),
     });
