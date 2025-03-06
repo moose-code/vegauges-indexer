@@ -231,7 +231,7 @@ export const updateEscrowLocksMetrics = async (
       totalLocked: totalLocked,
       amountOfLocks: isLocking ? BigInt(1) : BigInt(0),
       totalHolders: isNewHolder ? BigInt(1) : BigInt(0),
-      activeHolders: isNewHolder ? BigInt(1) : BigInt(0),
+      activeHolders: BigInt(activeHolder),
     });
   } else {
     context.EscrowLocksMetrics.set({
