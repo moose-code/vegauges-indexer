@@ -38,6 +38,7 @@ VotingEscrowIncreasing.Deposit.handler(async ({ event, context }) => {
     event.chainId,
     event.srcAddress,
     event.params.depositor,
+    event.params.tokenId,
     context,
   );
   await updateDepositDailyMetrics(
@@ -63,6 +64,7 @@ VotingEscrowIncreasing.Deposit.handler(async ({ event, context }) => {
     event.params.newTotalLocked,
     Number(event.params.startTs),
     true,
+    event.params.tokenId,
     context,
   );
 });
@@ -121,6 +123,7 @@ VotingEscrowIncreasing.Withdraw.handler(async ({ event, context }) => {
     event.params.newTotalLocked,
     Number(event.params.ts),
     false,
+    event.params.tokenId,
     context,
   );
 });
