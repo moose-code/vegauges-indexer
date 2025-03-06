@@ -24,21 +24,21 @@ export const addUniqueStaker = async (
   context: Context,
 ) => {
   let stakerKey = `${srcAddress}-${staker}-${chainId}`;
-  let stakerData = await context.StakerRegistry.get(staker);
+  let stakerData = await context.StakerRegistry.get(stakerKey);
 
   if (!stakerData) {
-    context.StakerRegistry.set({
+    await context.StakerRegistry.set({
       id: stakerKey,
       address: staker,
       votingEscrow_id: `${chainId}-${srcAddress}`,
       tokenIds: [tokenId],
     });
   } else {
-    context.StakerRegistry.set({
+    await context.StakerRegistry.set({
       id: stakerKey,
       address: staker,
       votingEscrow_id: `${chainId}-${srcAddress}`,
-      tokenIds: new Set([...stakerData.tokenIds, tokenId]).values(),
+      tokenIds: [...stakerData.tokenIds, tokenId],
     });
   }
 };
