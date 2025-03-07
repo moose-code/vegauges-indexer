@@ -14,11 +14,11 @@ import {
   updateEscrowLocksMetrics,
 } from "./helpers";
 
-VotingEscrowIncreasing.Initialized.handler(async ({ event, context }) => {
+VotingEscrowIncreasing.Initialized.handler(async ({ event, context }: any) => {
   setContractData(event.chainId, event.srcAddress, context);
 });
 
-VotingEscrowIncreasing.Deposit.handler(async ({ event, context }) => {
+VotingEscrowIncreasing.Deposit.handler(async ({ event, context }: any) => {
   const entity: Deposit = {
     id: `${event.params.tokenId}-${event.srcAddress}-${event.chainId}`,
     depositor: event.params.depositor,
@@ -78,7 +78,7 @@ VotingEscrowIncreasing.MinDepositSet.handler(async ({ event, context }) => {
   context.MinDepositSet.set(entity);
 });
 
-VotingEscrowIncreasing.Withdraw.handler(async ({ event, context }) => {
+VotingEscrowIncreasing.Withdraw.handler(async ({ event, context }: any) => {
   const entity: Withdraw = {
     id: `${event.chainId}-${event.block.number}-${event.logIndex}`,
     depositor: event.params.depositor,

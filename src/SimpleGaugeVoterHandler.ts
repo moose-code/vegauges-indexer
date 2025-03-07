@@ -13,7 +13,7 @@ import {
   addUniqueVoter,
 } from "./helpers";
 
-SimpleGaugeVoter.GaugeActivated.handler(async ({ event, context }) => {
+SimpleGaugeVoter.GaugeActivated.handler(async ({ event, context }: any) => {
   const entity: GaugeActivated = {
     id: `${event.chainId}-${event.block.number}-${event.logIndex}`,
     gauge: event.params.gauge,
@@ -23,7 +23,7 @@ SimpleGaugeVoter.GaugeActivated.handler(async ({ event, context }) => {
   context.GaugeActivated.set(entity);
 });
 
-SimpleGaugeVoter.GaugeCreated.handler(async ({ event, context }) => {
+SimpleGaugeVoter.GaugeCreated.handler(async ({ event, context }: any) => {
   await setContractData(event.chainId, event.srcAddress, context);
 
   const entity: GaugeCreated = {
@@ -37,7 +37,7 @@ SimpleGaugeVoter.GaugeCreated.handler(async ({ event, context }) => {
   context.GaugeCreated.set(entity);
 });
 
-SimpleGaugeVoter.GaugeDeactivated.handler(async ({ event, context }) => {
+SimpleGaugeVoter.GaugeDeactivated.handler(async ({ event, context }: any) => {
   const entity: GaugeDeactivated = {
     id: `${event.chainId}-${event.block.number}-${event.logIndex}`,
     gauge: event.params.gauge,
@@ -47,7 +47,7 @@ SimpleGaugeVoter.GaugeDeactivated.handler(async ({ event, context }) => {
   context.GaugeDeactivated.set(entity);
 });
 
-SimpleGaugeVoter.GaugeMetadataUpdated.handler(async ({ event, context }) => {
+SimpleGaugeVoter.GaugeMetadataUpdated.handler(async ({ event, context }: any) => {
   const entity: GaugeMetadataUpdated = {
     id: `${event.chainId}-${event.block.number}-${event.logIndex}`,
     gauge: event.params.gauge,
@@ -58,7 +58,7 @@ SimpleGaugeVoter.GaugeMetadataUpdated.handler(async ({ event, context }) => {
   context.GaugeMetadataUpdated.set(entity);
 });
 
-SimpleGaugeVoter.Reset.handler(async ({ event, context }) => {
+SimpleGaugeVoter.Reset.handler(async ({ event, context }: any) => {
   const entity: VoteReset = {
     id: `${event.chainId}-${event.block.number}-${event.logIndex}`,
     voter: event.params.voter,
@@ -87,7 +87,7 @@ SimpleGaugeVoter.Reset.handler(async ({ event, context }) => {
   );
 });
 
-SimpleGaugeVoter.Voted.handler(async ({ event, context }) => {
+SimpleGaugeVoter.Voted.handler(async ({ event, context }: any) => {
   const entity: Vote = {
     id: `${event.chainId}-${event.block.number}-${event.logIndex}`,
     voter: event.params.voter,

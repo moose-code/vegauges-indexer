@@ -2,11 +2,11 @@ import { ExitQueue, ExitQueued } from "generated";
 import { getDayID, getDayStartTimestamp, setContractData } from "./helpers";
 import { Context } from "vm";
 
-ExitQueue.Initialized.handler(async ({ event, context }) => {
+ExitQueue.Initialized.handler(async ({ event, context }: any) => {
   setContractData(event.chainId, event.srcAddress, context);
 });
 
-ExitQueue.ExitQueued.handler(async ({ event, context }) => {
+ExitQueue.ExitQueued.handler(async ({ event, context }: any) => {
   const votingEscrowAddress = votingEscrow(event.srcAddress);
 
   const entity: ExitQueued = {
