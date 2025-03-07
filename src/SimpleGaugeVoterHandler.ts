@@ -12,6 +12,7 @@ import {
   updateVotingMetrics,
   addUniqueVoter,
 } from "./helpers";
+import { fetchIpfs } from "./utils/ipfs";
 
 SimpleGaugeVoter.GaugeActivated.handler(async ({ event, context }: any) => {
   const entity: GaugeActivated = {
@@ -23,14 +24,30 @@ SimpleGaugeVoter.GaugeActivated.handler(async ({ event, context }: any) => {
   context.GaugeActivated.set(entity);
 });
 
+type GaugeMetadata = {
+  name: string;
+  address: string;
+  description: string;
+  logo: string;
+  resources: {
+    name: string;
+    url: string;
+  }[];
+};
+
 SimpleGaugeVoter.GaugeCreated.handler(async ({ event, context }: any) => {
   await setContractData(event.chainId, event.srcAddress, context);
+
+  const metadata = await fetchIpfs<GaugeMetadata>(event.params.metadataURI, context);
 
   const entity: GaugeCreated = {
     id: `${event.chainId}-${event.block.number}-${event.logIndex}`,
     gauge: event.params.gauge,
     creator: event.params.creator,
     metadataURI: event.params.metadataURI,
+    metadata: JSON.stringify(metadata),
+    name: metadata.name,
+    logo: metadata.logo,
     contract_id: `${event.chainId}-${event.srcAddress}`,
   };
 
@@ -48,10 +65,15 @@ SimpleGaugeVoter.GaugeDeactivated.handler(async ({ event, context }: any) => {
 });
 
 SimpleGaugeVoter.GaugeMetadataUpdated.handler(async ({ event, context }: any) => {
+  const metadata = await fetchIpfs<GaugeMetadata>(event.params.metadataURI, context);
+
   const entity: GaugeMetadataUpdated = {
     id: `${event.chainId}-${event.block.number}-${event.logIndex}`,
     gauge: event.params.gauge,
     metadataURI: event.params.metadataURI,
+    metadata: JSON.stringify(metadata),
+    name: metadata.name,
+    logo: metadata.logo,
     contract_id: `${event.chainId}-${event.srcAddress}`,
   };
 

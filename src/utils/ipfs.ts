@@ -25,13 +25,12 @@ async function tryFetchIpfsFile<T>(
     // we cycle through these endpoints to try ensure data availability
     // PINATA_IPFS_GATEWAY is an envio env var that can be set in your .env file, this is a paid gateway although doesn't always guarantee availability
     process.env.PINATA_IPFS_GATEWAY || "",
-    "https://cloudflare-ipfs.com/ipfs",
     "https://ipfs.io/ipfs",
   ];
   const MAX_RETRIES = 2;
   const RETRY_DELAY = 500; // in milliseconds
 
-  for (const endpoint of endpoints) {
+  for (const endpoint of endpoints.flat()) {
     let retries = 0;
     while (retries < MAX_RETRIES) {
       try {
@@ -55,14 +54,15 @@ export async function fetchIpfs<T>(
   context: handlerContext
 ): Promise<T> {
   const cache = await Cache.init();
-  const _metadata = await cache.read<T>(cid);
+  const _cid = cid.replace("ipfs://", "");
 
+  const _metadata = await cache.read<T>(_cid);
   if (_metadata) {
     return _metadata;
   }
 
-  const metadata = await tryFetchIpfsFile<T>(cid, context);
-  await cache.add(cid, metadata);
+  const metadata = await tryFetchIpfsFile<T>(_cid, context);
+  await cache.add(_cid, metadata);
 
   return metadata;
 }

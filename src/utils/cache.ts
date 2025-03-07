@@ -1,7 +1,7 @@
 import sqlite3 from "sqlite3";
 
 // SQLite database initialization
-const db = new sqlite3.Database(".cache/cache.db");
+const db = new sqlite3.Database("cache/cache.db");
 
 export class Cache {
   static async init() {
