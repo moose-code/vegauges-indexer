@@ -1,5 +1,11 @@
 import sqlite3 from "sqlite3";
 
+// If folder cache does not exist, create it
+import fs from "fs";
+if (!fs.existsSync("cache")) {
+  fs.mkdirSync("cache");
+}
+
 // SQLite database initialization
 const db = new sqlite3.Database("cache/cache.db");
 
