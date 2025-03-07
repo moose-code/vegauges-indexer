@@ -13,7 +13,6 @@ import {
   setContractData,
   updateEscrowLocksMetrics,
 } from "./helpers";
-import { EOF } from "dns";
 
 VotingEscrowIncreasing.Initialized.handler(async ({ event, context }) => {
   setContractData(event.chainId, event.srcAddress, context);
@@ -21,7 +20,7 @@ VotingEscrowIncreasing.Initialized.handler(async ({ event, context }) => {
 
 VotingEscrowIncreasing.Deposit.handler(async ({ event, context }) => {
   const entity: Deposit = {
-    id: `${event.params.tokenId}_${event.srcAddress}_${event.chainId}`,
+    id: `${event.params.tokenId}-${event.srcAddress}-${event.chainId}`,
     depositor: event.params.depositor,
     tokenId: event.params.tokenId,
     startTs: event.params.startTs,
@@ -71,7 +70,7 @@ VotingEscrowIncreasing.Deposit.handler(async ({ event, context }) => {
 
 VotingEscrowIncreasing.MinDepositSet.handler(async ({ event, context }) => {
   const entity: MinDepositSet = {
-    id: `${event.chainId}_${event.block.number}_${event.logIndex}`,
+    id: `${event.chainId}-${event.block.number}-${event.logIndex}`,
     minDeposit: event.params.minDeposit,
     contract_id: `${event.chainId}-${event.srcAddress}`,
   };
@@ -81,7 +80,7 @@ VotingEscrowIncreasing.MinDepositSet.handler(async ({ event, context }) => {
 
 VotingEscrowIncreasing.Withdraw.handler(async ({ event, context }) => {
   const entity: Withdraw = {
-    id: `${event.chainId}_${event.block.number}_${event.logIndex}`,
+    id: `${event.chainId}-${event.block.number}-${event.logIndex}`,
     depositor: event.params.depositor,
     tokenId: event.params.tokenId,
     value: event.params.value,
@@ -136,7 +135,7 @@ async function setLockActiveStatusToInactive(
   withdrawalTime: bigint,
   context: Context,
 ) {
-  const depositId = `${tokenId}_${srcAddress}_${chainId}`;
+  const depositId = `${tokenId}-${srcAddress}-${chainId}`;
   const deposit = await context.Deposit.get(depositId);
   const entity: Deposit = {
     id: depositId,

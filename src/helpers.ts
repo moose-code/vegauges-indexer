@@ -191,7 +191,7 @@ export const updateEscrowLocksMetrics = async (
   const amountActiveLocks = await stakerRecord.tokenIds.reduce(
     async (acc: number, tokenId: BigInt) => {
       const lock = await context.Deposit.get(
-        `${tokenId}_${srcAddress}_${chainId}`,
+        `${tokenId}-${srcAddress}-${chainId}`,
       );
       if (lock.active) {
         acc += 1;

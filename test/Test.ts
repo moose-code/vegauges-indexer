@@ -74,9 +74,7 @@ describe("SimpleGaugeVoter contract AdminChanged event tests", () => {
       });
     };
 
-    let gaugeDailyVotingMetricsArray = mockDb.entities.GaugeDailyVotingMetrics.getAll();
-    let gaugeDailyVotingMetrics = gaugeDailyVotingMetricsArray[gaugeDailyVotingMetricsArray.length - 1];
-    //let gaugeDailyVotingMetrics = mockDb.entities.GaugeDailyVotingMetrics.get(`0xd2d87c07c512Dc2351EeD3df77Ce04A73674C5f2_${srcAddress}_20020_${chainId}`);
+    let gaugeDailyVotingMetrics = mockDb.entities.GaugeDailyVotingMetrics.get(`0xd2d87c07c512Dc2351EeD3df77Ce04A73674C5f2-${srcAddress}-20020-${chainId}`);
 
     let resetVp = resetEvents.reduce((acc, resetEvent) => acc + BigInt(resetEvent.votingPowerRemovedFromGauge), BigInt(0));
     let voteVp = voteEvents.reduce((acc, voteEvent) => acc + BigInt(voteEvent.votingPowerCastForGauge), BigInt(0));

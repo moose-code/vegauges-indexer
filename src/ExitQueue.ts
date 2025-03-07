@@ -10,8 +10,8 @@ ExitQueue.ExitQueued.handler(async ({ event, context }) => {
   const votingEscrowAddress = votingEscrow(event.srcAddress);
 
   const entity: ExitQueued = {
-    id: `${event.chainId}_${event.block.number}_${event.logIndex}`,
-    contract_id: `${event.chainId}_${votingEscrowAddress}`,
+    id: `${event.chainId}-${event.block.number}-${event.logIndex}`,
+    contract_id: `${event.chainId}-${votingEscrowAddress}`,
     tokenId: event.params.tokenId,
     holder: event.params.holder,
     exitDate: event.params.exitDate,
@@ -43,7 +43,7 @@ const updateExitQueueDailyMetrics = async (
 
   // Get deposit by tokenId
   const lock = await context.Deposit.get(
-    `${tokenId}_${votingEscrow}_${chainId}`,
+    `${tokenId}-${votingEscrow}-${chainId}`,
   );
 
   if (!lock) {
