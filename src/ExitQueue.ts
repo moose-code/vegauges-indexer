@@ -72,9 +72,7 @@ const updateExitQueueDailyMetrics = async (
 };
 
 const votingEscrow = (exitQueue: string): String =>
-  getVotingEscrowAddressFromExitQueue[
-    exitQueue as keyof typeof getVotingEscrowAddressFromExitQueue
-  ];
+  getVotingEscrowAddressFromExitQueue[exitQueue as keyof typeof getVotingEscrowAddressFromExitQueue];
 
 const getVotingEscrowAddressFromExitQueue = {
   "0x915e50A7C53e05F72122bC883309a812A90bA163":

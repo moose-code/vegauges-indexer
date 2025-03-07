@@ -1,36 +1,89 @@
 import assert from "assert";
-import { 
+import {
   TestHelpers,
-  SimpleGaugeVoter_AdminChanged
 } from "generated";
 const { MockDb, SimpleGaugeVoter } = TestHelpers;
 
+import voteEvents from "./fixtures/Votes.json";
+import resetEvents from "./fixtures/Resets.json";
+
 describe("SimpleGaugeVoter contract AdminChanged event tests", () => {
   // Create mock db
-  const mockDb = MockDb.createMockDb();
+  let mockDb = MockDb.createMockDb();
+  const chainId = 34443;
+  const srcAddress = "0x71439Ae82068E19ea90e4F506c74936aE170Cf58";
 
-  // Creating mock for SimpleGaugeVoter contract AdminChanged event
-  const event = SimpleGaugeVoter.AdminChanged.createMockEvent({/* It mocks event fields with default values. You can overwrite them if you need */});
+  // Creating mock for SimpleGaugeVoter contract Reset event
+  const resetLogs = resetEvents.map((resetEvent, i) =>
+    SimpleGaugeVoter.Reset.createMockEvent({
+      voter: resetEvent.voter,
+      gauge: resetEvent.gauge,
+      epoch: BigInt(resetEvent.epoch),
+      tokenId: BigInt(resetEvent.tokenId),
+      votingPowerRemovedFromGauge: BigInt(resetEvent.votingPowerRemovedFromGauge),
+      totalVotingPowerInGauge: BigInt(resetEvent.totalVotingPowerInGauge),
+      totalVotingPowerInContract: BigInt(resetEvent.totalVotingPowerInContract),
+      timestamp: BigInt(resetEvent.timestamp),
+      mockEventData: {
+        chainId,
+        srcAddress,
+        logIndex: 1,
+        block: {
+          number: 17290000 + i,
+        },
+      },
+    })
+  );
+
+  // Creating mock for SimpleGaugeVoter contract Vote event
+  const voteLogs = voteEvents.map((voteEvent, i) =>
+    SimpleGaugeVoter.Voted.createMockEvent({
+      voter: voteEvent.voter,
+      gauge: voteEvent.gauge,
+      epoch: BigInt(voteEvent.epoch),
+      tokenId: BigInt(voteEvent.tokenId),
+      votingPowerCastForGauge: BigInt(voteEvent.votingPowerCastForGauge),
+      totalVotingPowerInGauge: BigInt(voteEvent.totalVotingPowerInGauge),
+      totalVotingPowerInContract: BigInt(voteEvent.totalVotingPowerInContract),
+      timestamp: BigInt(voteEvent.timestamp),
+      mockEventData: {
+        chainId,
+        srcAddress,
+        logIndex: 1,
+        block: {
+          number: 17290000,
+        },
+      },
+    })
+  );
 
   it("SimpleGaugeVoter_AdminChanged is created correctly", async () => {
-    // Processing the event
-    const mockDbUpdated = await SimpleGaugeVoter.AdminChanged.processEvent({
-      event,
-      mockDb,
-    });
 
-    // Getting the actual entity from the mock database
-    let actualSimpleGaugeVoterAdminChanged = mockDbUpdated.entities.SimpleGaugeVoter_AdminChanged.get(
-      `${event.chainId}_${event.block.number}_${event.logIndex}`
-    );
-
-    // Creating the expected entity
-    const expectedSimpleGaugeVoterAdminChanged: SimpleGaugeVoter_AdminChanged = {
-      id: `${event.chainId}_${event.block.number}_${event.logIndex}`,
-      previousAdmin: event.params.previousAdmin,
-      newAdmin: event.params.newAdmin,
+    // Processing the events
+    for (const resetLog of resetLogs) {
+      mockDb = await SimpleGaugeVoter.Reset.processEvent({
+        event: resetLog,
+        mockDb,
+      });
     };
-    // Asserting that the entity in the mock database is the same as the expected entity
-    assert.deepEqual(actualSimpleGaugeVoterAdminChanged, expectedSimpleGaugeVoterAdminChanged, "Actual SimpleGaugeVoterAdminChanged should be the same as the expectedSimpleGaugeVoterAdminChanged");
+
+    for (const voteLog of voteLogs) {
+      mockDb = await SimpleGaugeVoter.Voted.processEvent({
+        event: voteLog,
+        mockDb,
+      });
+    };
+
+    let gaugeDailyVotingMetricsArray = mockDb.entities.GaugeDailyVotingMetrics.getAll();
+    let gaugeDailyVotingMetrics = gaugeDailyVotingMetricsArray[gaugeDailyVotingMetricsArray.length - 1];
+    //let gaugeDailyVotingMetrics = mockDb.entities.GaugeDailyVotingMetrics.get(`0xd2d87c07c512Dc2351EeD3df77Ce04A73674C5f2_${srcAddress}_20020_${chainId}`);
+
+    let resetVp = resetEvents.reduce((acc, resetEvent) => acc + BigInt(resetEvent.votingPowerRemovedFromGauge), BigInt(0));
+    let voteVp = voteEvents.reduce((acc, voteEvent) => acc + BigInt(voteEvent.votingPowerCastForGauge), BigInt(0));
+
+    //console.log("gaugeDailyVotingMetrics:" + JSON.stringify(gaugeDailyVotingMetrics, (_, v) => typeof v === 'bigint' ? v.toString() : v));
+
+    assert.equal(gaugeDailyVotingMetrics?.totalVotingPowerChange, voteVp - resetVp, "totalVotingPowerChange should be the same as the sum of votes and reset events");
+    assert.equal(gaugeDailyVotingMetrics?.totalVotingPowerChange, gaugeDailyVotingMetrics?.totalVotingPowerInGauge, "totalVotingPowerChange should be the same as totalVotingPowerInGauge");
   });
 });

@@ -186,7 +186,7 @@ export const updateEscrowLocksMetrics = async (
   let locksData = await context.EscrowLocksMetrics.get(aggregatedDataID);
 
   const stakerKey = `${srcAddress}-${staker}-${chainId}`;
-  let stakerRecord = await context.StakerRegistry.get(stakerKey); // Assume VoterRegistry exists
+  let stakerRecord = await context.StakerRegistry.get(stakerKey); // Assume StakerRegistry exists
 
   const amountActiveLocks = await stakerRecord.tokenIds.reduce(
     async (acc: number, tokenId: BigInt) => {
@@ -256,6 +256,8 @@ export const updateVotingMetrics = async (
   gauge: String,
   voter: String,
   votingPower: BigInt,
+  totalVotingPowerInGauge: BigInt,
+  totalVotingPowerInContract: BigInt,
   timestamp: number,
   isNewVote: boolean, // true for new votes, false for resets
   context: Context,
@@ -270,6 +272,7 @@ export const updateVotingMetrics = async (
     gauge,
     voter,
     votingPower,
+    totalVotingPowerInGauge,
     dayId,
     dayStartTimestamp,
     isNewVote,
@@ -306,12 +309,13 @@ const updateGaugeDailyMetrics = async (
   gauge: String,
   voter: String,
   votingPower: BigInt,
+  totalVotingPowerInGauge: BigInt,
   dayId: number,
   dayTimestamp: number,
   isNewVote: boolean,
   context: Context,
 ) => {
-  const gaugeMetricsId = `${gauge}-${dayId}-${chainId}`;
+  const gaugeMetricsId = `${gauge}-${srcAddress}-${dayId}-${chainId}`;
   const contractMetricsId = `${srcAddress}-${dayId}-${chainId}`;
   const contractId = `${chainId}-${srcAddress}`;
 
@@ -322,29 +326,31 @@ const updateGaugeDailyMetrics = async (
   // to track unique voters per gauge per day
   const voterChangeCount = isNewVote ? BigInt(1) : BigInt(-1);
   if (!gaugeMetrics) {
-    context.GaugeDailyVotingMetrics.set({
+    await context.GaugeDailyVotingMetrics.set({
       id: gaugeMetricsId,
       date: dayTimestamp,
       gauge: gauge,
       contract_id: contractId,
-      totalVotingPower: isNewVote ? votingPower : -votingPower,
+      totalVotingPowerChange: isNewVote ? BigInt(votingPower.toString()) : -BigInt(votingPower.toString()),
+      totalVotingPowerInGauge: totalVotingPowerInGauge,
       voterCount: isNewVote ? BigInt(1) : BigInt(0),
       gaugePlugin_id: contractMetricsId,
     });
   } else {
     // Update existing metrics
     const newVotingPower = isNewVote
-      ? gaugeMetrics.totalVotingPower + votingPower
-      : BigInt(gaugeMetrics.totalVotingPower) - BigInt(votingPower.toString());
+      ? BigInt(gaugeMetrics.totalVotingPowerChange) + BigInt(votingPower.toString())
+      : BigInt(gaugeMetrics.totalVotingPowerChange) - BigInt(votingPower.toString());
 
     const newVoterCount = gaugeMetrics.voterCount + voterChangeCount;
 
-    context.GaugeDailyVotingMetrics.set({
+    await context.GaugeDailyVotingMetrics.set({
       id: gaugeMetricsId,
       date: dayTimestamp,
       gauge: gauge,
       contract_id: contractId,
-      totalVotingPower: newVotingPower,
+      totalVotingPowerChange: newVotingPower,
+      totalVotingPowerInGauge: totalVotingPowerInGauge,
       voterCount: newVoterCount < BigInt(0) ? BigInt(0) : newVoterCount,
       gaugePlugin_id: contractMetricsId,
     });
@@ -376,13 +382,13 @@ const updateGaugePluginDailyMetrics = async (
       id: contractMetricsId,
       date: dayTimestamp,
       contract_id: contractId,
-      totalVotingPower: votingPowerChange,
+      totalVotingPowerChange: votingPowerChange,
       votesCount: BigInt(1),
     });
   } else {
     // Update existing metrics
-    const newTotalVotingPower =
-      contractMetrics.totalVotingPower + votingPowerChange;
+    const newTotalVotingPowerChange =
+      contractMetrics.totalVotingPowerChange + votingPowerChange;
 
     // For accurate voter counts, you'd need a separate tracking mechanism
     // This is a simplified approximation
@@ -392,7 +398,7 @@ const updateGaugePluginDailyMetrics = async (
       id: contractMetricsId,
       date: dayTimestamp,
       contract_id: contractId,
-      totalVotingPower: newTotalVotingPower,
+      totalVotingPowerChange: newTotalVotingPowerChange,
       votesCount: contractMetrics.votesCount + voterCountChange,
     });
   }

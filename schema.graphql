@@ -57,7 +57,7 @@ type VoteReset {
     totalVotingPowerInGauge: BigInt!
     totalVotingPowerInContract: BigInt!
     timestamp: BigInt!
-    contract: Contract!
+    contract: Contract! @index
 }
 
 type Vote {
@@ -152,7 +152,8 @@ type GaugeDailyVotingMetrics {
     contract: Contract!
     date: Int! # timestamp rounded to current day by dividing by 86400
     gauge: String!
-    totalVotingPower: BigInt!
+    totalVotingPowerChange: BigInt!
+    totalVotingPowerInGauge: BigInt!
     voterCount: BigInt!
     gaugePlugin: GaugePluginDailyVotingMetrics!
 }
@@ -162,7 +163,7 @@ type GaugePluginDailyVotingMetrics {
     id: ID! # plugin-dayId-chainId
     contract: Contract!
     date: Int!
-    totalVotingPower: BigInt!
+    totalVotingPowerChange: BigInt!
     votesCount: BigInt!
     gaugeMetrics: [GaugeDailyVotingMetrics!]! @derivedFrom(field: "gaugePlugin")
 }

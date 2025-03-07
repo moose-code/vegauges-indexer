@@ -24,7 +24,7 @@ SimpleGaugeVoter.GaugeActivated.handler(async ({ event, context }) => {
 });
 
 SimpleGaugeVoter.GaugeCreated.handler(async ({ event, context }) => {
-  setContractData(event.chainId, event.srcAddress, context);
+  await setContractData(event.chainId, event.srcAddress, context);
 
   const entity: GaugeCreated = {
     id: `${event.chainId}_${event.block.number}_${event.logIndex}`,
@@ -73,12 +73,14 @@ SimpleGaugeVoter.Reset.handler(async ({ event, context }) => {
   };
 
   context.VoteReset.set(entity);
-  updateVotingMetrics(
+  await updateVotingMetrics(
     event.chainId,
     event.srcAddress,
     event.params.gauge,
     event.params.voter,
     event.params.votingPowerRemovedFromGauge,
+    event.params.totalVotingPowerInGauge,
+    event.params.totalVotingPowerInContract,
     Number(event.params.timestamp),
     false,
     context,
@@ -101,13 +103,15 @@ SimpleGaugeVoter.Voted.handler(async ({ event, context }) => {
 
   context.Vote.set(entity);
 
-  addUniqueVoter(event.chainId, event.srcAddress, event.params.voter, context);
-  updateVotingMetrics(
+  await addUniqueVoter(event.chainId, event.srcAddress, event.params.voter, context);
+  await updateVotingMetrics(
     event.chainId,
     event.srcAddress,
     event.params.gauge,
     event.params.voter,
     event.params.votingPowerCastForGauge,
+    event.params.totalVotingPowerInGauge,
+    event.params.totalVotingPowerInContract,
     Number(event.params.timestamp),
     true,
     context,
