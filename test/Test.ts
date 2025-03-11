@@ -7,7 +7,7 @@ const { MockDb, SimpleGaugeVoter } = TestHelpers;
 import voteEvents from "./fixtures/Votes.json";
 import resetEvents from "./fixtures/Resets.json";
 
-describe("SimpleGaugeVoter contract AdminChanged event tests", () => {
+describe("SimpleGaugeVoter contract Vote/Reset events tests", () => {
   // Create mock db
   let mockDb = MockDb.createMockDb();
   const chainId = 34443;
@@ -57,7 +57,7 @@ describe("SimpleGaugeVoter contract AdminChanged event tests", () => {
     })
   );
 
-  it("SimpleGaugeVoter_AdminChanged is created correctly", async () => {
+  it("SimpleGaugeVoter aggregates the votes and reset correctly", async () => {
 
     // Processing the events
     for (const resetLog of resetLogs) {

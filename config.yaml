@@ -7,6 +7,7 @@ contracts:
       - event: Deposit(address indexed depositor, uint256 indexed tokenId, uint256 indexed startTs, uint256 value, uint256 newTotalLocked)
       - event: MinDepositSet(uint256 minDeposit)
       - event: Withdraw(address indexed depositor, uint256 indexed tokenId, uint256 value, uint256 ts, uint256 newTotalLocked)
+      - event: Upgraded(address indexed implementation)
       - event: Initialized(uint8 version)
   - name: SimpleGaugeVoter
     handler: src/EventHandlers.ts
@@ -17,10 +18,13 @@ contracts:
       - event: GaugeMetadataUpdated(address indexed gauge, string metadataURI)
       - event: Reset(address indexed voter, address indexed gauge, uint256 indexed epoch, uint256 tokenId, uint256 votingPowerRemovedFromGauge, uint256 totalVotingPowerInGauge, uint256 totalVotingPowerInContract, uint256 timestamp)
       - event: Voted(address indexed voter, address indexed gauge, uint256 indexed epoch, uint256 tokenId, uint256 votingPowerCastForGauge, uint256 totalVotingPowerInGauge, uint256 totalVotingPowerInContract, uint256 timestamp)
+      - event: Upgraded(address indexed implementation)
+      - event: Initialized(uint8 version)
   - name: ExitQueue
     handler: src/EventHandlers.ts
     events:
       - event: ExitQueued(uint256 indexed tokenId, address indexed holder, uint256 exitDate)
+      - event: Upgraded(address indexed implementation)
       - event: Initialized(uint8 version)
 networks:
   - id: 1

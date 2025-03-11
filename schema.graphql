@@ -6,6 +6,38 @@ type Contract {
     address: String!
 }
 
+type ProxyContractUpdates {
+    id: ID! # chainId + "-" + address + "-" + implementation
+    chainId: String!
+    address: String!
+    implementation: Contract!
+    blockNumber: BigInt!
+    timestamp: BigInt!
+}
+
+type Gauge {
+    id: ID! # gauge-plugin-chainId
+    gaugePlugin: GaugePlugin!
+    gauge: String!
+    creator: String!
+    metadataURI: String!
+    metadata: String!
+    name: String
+    logo: String
+    active: Boolean!
+    # dailyMetricts: [GaugeDailyVotingMetrics!]! @derivedFrom(field: "gauge")
+    # allTimeMetrics: GaugePluginVotingMetrics! @derivedFrom(field: "plugin")
+}
+
+type GaugePlugin {
+    id: ID!
+    pluginContract: Contract!
+    gauges: [Gauge!]! @derivedFrom(field: "gaugePlugin")
+    # dailyMetrics: [GaugePluginDailyVotingMetrics!]! @derivedFrom(field: "gaugePlugin")
+    # allTimeMetrics: GaugePluginVotingMetrics! @derivedFrom(field: "plugin")
+}
+
+
 type StakerRegistry {
     id: ID! # SimpleGaugeVoterAddress + "-" + user + "-" + chainId
     address: String!
@@ -42,6 +74,7 @@ type GaugeDeactivated {
     gauge: String!
     contract: Contract!
 }
+
 
 type GaugeMetadataUpdated {
     id: ID!
@@ -143,6 +176,15 @@ type EscrowDailyMetrics {
 }
 
 type EscrowLocksMetrics {
+    id: ID! # escrowAddress + "-" + chainId
+    contract: Contract!
+    totalLocked: BigInt!
+    amountOfLocks: BigInt!
+    totalHolders: BigInt!
+    activeHolders: BigInt!
+}
+
+type EscrowLocksDailyMetrics {
     id: ID! # escrowAddress + "-" + dayId + "-" + chainId
     date: Int! # timestamp rounded to current day by dividing by 86400
     contract: Contract!

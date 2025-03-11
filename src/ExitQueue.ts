@@ -1,9 +1,27 @@
 import { ExitQueue, ExitQueued } from "generated";
-import { getDayID, getDayStartTimestamp, setContractData } from "./helpers";
+import { setContractData } from "./helpers";
+import { getDayId, getDayStartTimestamp } from "./utils/timeHelpers";
 import { Context } from "vm";
+import { buildContractId, buildProxyContractId } from "./utils/idBuilder";
 
 ExitQueue.Initialized.handler(async ({ event, context }: any) => {
   setContractData(event.chainId, event.srcAddress, context);
+});
+
+ExitQueue.Upgraded.handler(async ({ event, context }: any) => {
+  const contractId = buildProxyContractId(event.chainId, event.srcAddress, event.params.implementation);
+  const implementationId = buildContractId(event.chainId, event.params.implementation);
+
+  await setContractData(event.chainId, event.params.implementation, context);
+
+  context.ProxyContractUpdates.set({
+    id: contractId,
+    chainId: event.chainId,
+    address: event.srcAddress,
+    implementation_id: implementationId,
+    blockNumber: event.block.number,
+    timestamp: event.block.timestamp,
+  });
 });
 
 ExitQueue.ExitQueued.handler(async ({ event, context }: any) => {
@@ -35,7 +53,7 @@ const updateExitQueueDailyMetrics = async (
   exitDate: BigInt,
   context: Context,
 ) => {
-  const dayID = getDayID(Number(exitDate));
+  const dayID = getDayId(Number(exitDate));
   const dayStartTimestamp = getDayStartTimestamp(dayID);
   const aggregatedDataID = `${votingEscrow}-${dayID}-${chainId}`;
 

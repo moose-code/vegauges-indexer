@@ -8,20 +8,51 @@ import {
   Vote,
 } from "generated";
 import {
+  setGauge,
+  updateGaugeMetadata,
+  activateGauge,
+  deactivateGauge,
   setContractData,
   updateVotingMetrics,
   addUniqueVoter,
 } from "./helpers";
 import { fetchIpfs } from "./utils/ipfs";
+import { buildContractId, buildProxyContractId } from "./utils/idBuilder";
+
+SimpleGaugeVoter.Initialized.handler(async ({ event, context }: any) => {
+  await setContractData(event.chainId, event.srcAddress, context);
+
+  context.GaugePlugin.set({
+    id: buildContractId(event.chainId, event.srcAddress),
+    pluginContract_id: buildContractId(event.chainId, event.srcAddress),
+  });
+});
+
+SimpleGaugeVoter.Upgraded.handler(async ({ event, context }: any) => {
+  const contractId = buildProxyContractId(event.chainId, event.srcAddress, event.params.implementation);
+  const implementationId = buildContractId(event.chainId, event.params.implementation);
+
+  await setContractData(event.chainId, event.params.implementation, context);
+
+  context.ProxyContractUpdates.set({
+    id: contractId,
+    chainId: event.chainId,
+    address: event.srcAddress,
+    implementation_id: implementationId,
+    blockNumber: event.block.number,
+    timestamp: event.block.timestamp,
+  });
+});
 
 SimpleGaugeVoter.GaugeActivated.handler(async ({ event, context }: any) => {
   const entity: GaugeActivated = {
     id: `${event.chainId}-${event.block.number}-${event.logIndex}`,
     gauge: event.params.gauge,
-    contract_id: `${event.chainId}-${event.srcAddress}`,
+    contract_id: buildContractId(event.chainId, event.srcAddress),
   };
 
   context.GaugeActivated.set(entity);
+  await activateGauge(event.chainId, event.srcAddress, event.params.gauge, context);
 });
 
 type GaugeMetadata = {
@@ -36,8 +67,6 @@ type GaugeMetadata = {
 };
 
 SimpleGaugeVoter.GaugeCreated.handler(async ({ event, context }: any) => {
-  await setContractData(event.chainId, event.srcAddress, context);
-
   const metadata = await fetchIpfs<GaugeMetadata>(event.params.metadataURI, context);
 
   const entity: GaugeCreated = {
@@ -48,20 +77,34 @@ SimpleGaugeVoter.GaugeCreated.handler(async ({ event, context }: any) => {
     metadata: JSON.stringify(metadata),
     name: metadata.name,
     logo: metadata.logo,
-    contract_id: `${event.chainId}-${event.srcAddress}`,
+    contract_id: buildContractId(event.chainId, event.srcAddress),
   };
 
   context.GaugeCreated.set(entity);
+
+  await setGauge(
+    event.chainId,
+    event.srcAddress,
+    event.params.gauge,
+    event.params.creator,
+    event.params.metadataURI,
+    JSON.stringify(metadata),
+    metadata.name,
+    metadata.logo,
+    true,
+    context,
+  );
 });
 
 SimpleGaugeVoter.GaugeDeactivated.handler(async ({ event, context }: any) => {
   const entity: GaugeDeactivated = {
     id: `${event.chainId}-${event.block.number}-${event.logIndex}`,
     gauge: event.params.gauge,
-    contract_id: `${event.chainId}-${event.srcAddress}`,
+    contract_id: buildContractId(event.chainId, event.srcAddress),
   };
 
   context.GaugeDeactivated.set(entity);
+  await deactivateGauge(event.chainId, event.srcAddress, event.params.gauge, context);
 });
 
 SimpleGaugeVoter.GaugeMetadataUpdated.handler(async ({ event, context }: any) => {
@@ -74,10 +117,20 @@ SimpleGaugeVoter.GaugeMetadataUpdated.handler(async ({ event, context }: any) =>
     metadata: JSON.stringify(metadata),
     name: metadata.name,
     logo: metadata.logo,
-    contract_id: `${event.chainId}-${event.srcAddress}`,
+    contract_id: buildContractId(event.chainId, event.srcAddress),
   };
 
   context.GaugeMetadataUpdated.set(entity);
+  await updateGaugeMetadata(
+    event.chainId,
+    event.srcAddress,
+    event.params.gauge,
+    event.params.metadataURI,
+    JSON.stringify(metadata),
+    metadata.name,
+    metadata.logo,
+    context,
+  );
 });
 
 SimpleGaugeVoter.Reset.handler(async ({ event, context }: any) => {
@@ -91,7 +144,7 @@ SimpleGaugeVoter.Reset.handler(async ({ event, context }: any) => {
     totalVotingPowerInGauge: event.params.totalVotingPowerInGauge,
     totalVotingPowerInContract: event.params.totalVotingPowerInContract,
     timestamp: event.params.timestamp,
-    contract_id: `${event.chainId}-${event.srcAddress}`,
+    contract_id: buildContractId(event.chainId, event.srcAddress),
   };
 
   context.VoteReset.set(entity);
@@ -120,7 +173,7 @@ SimpleGaugeVoter.Voted.handler(async ({ event, context }: any) => {
     totalVotingPowerInGauge: event.params.totalVotingPowerInGauge,
     totalVotingPowerInContract: event.params.totalVotingPowerInContract,
     timestamp: event.params.timestamp,
-    contract_id: `${event.chainId}-${event.srcAddress}`,
+    contract_id: buildContractId(event.chainId, event.srcAddress),
   };
 
   context.Vote.set(entity);

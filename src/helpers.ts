@@ -1,20 +1,117 @@
 import { Context } from "vm";
+import {
+  buildContractId,
+  buildGaugeId,
+  buildGaugePluginId,
+  buildStakerId,
+  buildVoterId,
+  aggregatedDataId,
+  buildDepositId,
+  buildAllTimeMetrictsId,
+  buildDailyMetrictsId
+} from "./utils/idBuilder";
+import { getDayId, getDayStartTimestamp } from "./utils/timeHelpers";
 
 export const setContractData = async (
   chainId: Number,
   srcAddress: String,
   context: Context,
 ) => {
-  let contract_id = await context.Contract.get(`${chainId}-${srcAddress}`);
+  const contract_id = buildContractId(chainId, srcAddress);
+  let contract = await context.Contract.get(contract_id);
 
-  if (!contract_id) {
+  if (!contract) {
     context.Contract.set({
-      id: `${chainId}-${srcAddress}`,
+      id: contract_id,
       address: srcAddress,
       chainId: chainId,
     });
   }
 };
+
+export const setGauge = async (
+  chainId: Number,
+  gaugePlugin: String,
+  gauge: String,
+  creator: String,
+  metadataURI: String,
+  metadata: String,
+  name: String,
+  logo: String,
+  active: boolean,
+  context: Context,
+) => {
+  const gaugeId = buildGaugeId(gauge, gaugePlugin, chainId);
+  const gaugePluginId = buildGaugePluginId(gaugePlugin, chainId);
+
+  context.Gauge.set({
+    id: gaugeId,
+    gauge: gauge,
+    creator: creator,
+    metadataURI: metadataURI,
+    metadata: metadata,
+    name: name,
+    logo: logo,
+    active: active,
+    gaugePlugin_id: gaugePluginId,
+  });
+};
+
+export const updateGaugeMetadata = async (
+  chainId: Number,
+  pluginId: String,
+  gauge: String,
+  metadataURI: String,
+  metadata: String,
+  name: String,
+  logo: String,
+  context: Context,
+) => {
+  const gaugeId = buildGaugeId(gauge, pluginId, chainId);
+
+  let gaugeData = await context.Gauge.get(gaugeId);
+
+  context.Gauge.set({
+    ...gaugeData,
+    metadataURI: metadataURI,
+    metadata: metadata,
+    name: name,
+    logo: logo,
+  });
+};
+
+export const deactivateGauge = async (
+  chainId: Number,
+  pluginId: String,
+  gauge: String,
+  context: Context,
+) => {
+  const gaugeId = buildGaugeId(gauge, pluginId, chainId);
+
+  let gaugeData = await context.Gauge.get(gaugeId);
+
+  context.Gauge.set({
+    ...gaugeData,
+    active: false,
+  });
+}
+
+export const activateGauge = async (
+  chainId: Number,
+  pluginId: String,
+  gauge: String,
+  context: Context,
+) => {
+  const gaugeId = buildGaugeId(gauge, pluginId, chainId);
+
+  let gaugeData = await context.Gauge.get(gaugeId);
+
+  context.Gauge.set({
+    ...gaugeData,
+    active: true,
+  });
+}
+
 
 export const addUniqueStaker = async (
   chainId: Number,
@@ -23,21 +120,23 @@ export const addUniqueStaker = async (
   tokenId: BigInt,
   context: Context,
 ) => {
-  let stakerKey = `${srcAddress}-${staker}-${chainId}`;
+  const stakerKey = buildStakerId(srcAddress, staker, chainId);
+  const stakerContractId = buildContractId(chainId, srcAddress);
+
   let stakerData = await context.StakerRegistry.get(stakerKey);
 
   if (!stakerData) {
     await context.StakerRegistry.set({
       id: stakerKey,
       address: staker,
-      votingEscrow_id: `${chainId}-${srcAddress}`,
+      votingEscrow_id: stakerContractId,
       tokenIds: [tokenId],
     });
   } else {
     await context.StakerRegistry.set({
       id: stakerKey,
       address: staker,
-      votingEscrow_id: `${chainId}-${srcAddress}`,
+      votingEscrow_id: stakerContractId,
       tokenIds: [...stakerData.tokenIds, tokenId],
     });
   }
@@ -49,7 +148,8 @@ export const addUniqueVoter = async (
   voter: String,
   context: Context,
 ) => {
-  const voterKey = `${srcAddress}-${voter}-${chainId}`;
+  const voterKey = buildVoterId(srcAddress, voter, chainId);
+  const voterContractId = buildContractId(chainId, srcAddress);
 
   let voterData = await context.VoterRegistry.get(voterKey);
 
@@ -57,18 +157,10 @@ export const addUniqueVoter = async (
     context.VoterRegistry.set({
       id: voterKey,
       address: voter,
-      gaugeVoter_id: `${chainId}-${srcAddress}`,
+      gaugeVoter_id: voterContractId,
     });
   }
 };
-
-export function getDayID(timestamp: number) {
-  return Math.floor(timestamp / 86400); // rounded
-}
-
-export function getDayStartTimestamp(dayID: number) {
-  return dayID * 86400;
-}
 
 export const updateDepositDailyMetrics = async (
   chainId: Number,
@@ -77,9 +169,10 @@ export const updateDepositDailyMetrics = async (
   timestamp: number,
   context: Context,
 ) => {
-  const dayID = getDayID(timestamp);
+  const dayID = getDayId(timestamp);
   const dayStartTimestamp = getDayStartTimestamp(dayID);
-  const aggregatedDataID = `${srcAddress}-${dayID}-${chainId}`;
+  const aggregatedDataID = aggregatedDataId(srcAddress, timestamp, chainId);
+  const contractId = buildContractId(chainId, srcAddress);
 
   let locksData = await context.EscrowDepositDailyMetrics.get(aggregatedDataID);
 
@@ -87,7 +180,7 @@ export const updateDepositDailyMetrics = async (
     context.EscrowDepositDailyMetrics.set({
       id: aggregatedDataID,
       date: dayStartTimestamp,
-      contract_id: `${chainId}-${srcAddress}`,
+      contract_id: contractId,
       totalLocked: lockedAmount,
       amountOfLocks: BigInt(1),
     });
@@ -95,7 +188,7 @@ export const updateDepositDailyMetrics = async (
     context.EscrowDepositDailyMetrics.set({
       id: aggregatedDataID,
       date: dayStartTimestamp,
-      contract_id: `${chainId}-${srcAddress}`,
+      contract_id: contractId,
       totalLocked: locksData.totalLocked + lockedAmount,
       amountOfLocks: locksData.amountOfLocks + BigInt(1),
     });
@@ -108,9 +201,10 @@ export const updateWithdrawalDailyMetrics = async (
   timestamp: number,
   context: Context,
 ) => {
-  const dayID = getDayID(timestamp);
+  const dayID = getDayId(timestamp);
   const dayStartTimestamp = getDayStartTimestamp(dayID);
-  const aggregatedDataID = `${srcAddress}-${dayID}-${chainId}`;
+  const aggregatedDataID = aggregatedDataId(srcAddress, timestamp, chainId);
+  const contractId = buildContractId(chainId, srcAddress);
 
   let locksData =
     await context.EscrowWithdrawDailyMetrics.get(aggregatedDataID);
@@ -119,7 +213,7 @@ export const updateWithdrawalDailyMetrics = async (
     context.EscrowWithdrawDailyMetrics.set({
       id: aggregatedDataID,
       date: dayStartTimestamp,
-      contract_id: `${chainId}-${srcAddress}`,
+      contract_id: contractId,
       totalWithdraw: value,
       amountOfWithdrawals: BigInt(1),
     });
@@ -127,7 +221,7 @@ export const updateWithdrawalDailyMetrics = async (
     context.EscrowWithdrawDailyMetrics.set({
       id: aggregatedDataID,
       date: dayStartTimestamp,
-      contract_id: `${chainId}-${srcAddress}`,
+      contract_id: contractId,
       totalWithdraw: locksData.totalWithdraw + value,
       amountOfWithdrawals: locksData.amountOfWithdrawals + BigInt(1),
     });
@@ -142,9 +236,10 @@ export const updateEscrowDailyMetrics = async (
   isLocking: boolean,
   context: Context,
 ) => {
-  const dayID = getDayID(timestamp);
+  const dayID = getDayId(timestamp);
   const dayStartTimestamp = getDayStartTimestamp(dayID);
-  const aggregatedDataID = `${srcAddress}-${dayID}-${chainId}`;
+  const aggregatedDataID = aggregatedDataId(srcAddress, timestamp, chainId);
+  const contractId = buildContractId(chainId, srcAddress);
 
   let locksData = await context.EscrowDailyMetrics.get(aggregatedDataID);
 
@@ -152,7 +247,7 @@ export const updateEscrowDailyMetrics = async (
     context.EscrowDailyMetrics.set({
       id: aggregatedDataID,
       date: dayStartTimestamp,
-      contract_id: `${chainId}-${srcAddress}`,
+      contract_id: contractId,
       totalLocked: totalLocked,
       amountOfLocks: isLocking ? BigInt(1) : BigInt(0),
     });
@@ -160,7 +255,7 @@ export const updateEscrowDailyMetrics = async (
     context.EscrowDailyMetrics.set({
       id: aggregatedDataID,
       date: dayStartTimestamp,
-      contract_id: `${chainId}-${srcAddress}`,
+      contract_id: contractId,
       totalLocked: totalLocked,
       amountOfLocks: isLocking
         ? locksData.amountOfLocks + BigInt(1)
@@ -169,29 +264,107 @@ export const updateEscrowDailyMetrics = async (
   }
 };
 
-export const updateEscrowLocksMetrics = async (
+export const updateEscrowLocksDailyMetrics = async (
   chainId: Number,
   srcAddress: String,
   staker: String,
   totalLocked: BigInt,
   timestamp: number,
   isLocking: boolean,
-  tokenId: BigInt,
   context: Context,
 ) => {
-  const dayID = getDayID(timestamp);
+  const dayID = getDayId(timestamp);
   const dayStartTimestamp = getDayStartTimestamp(dayID);
-  const aggregatedDataID = `${srcAddress}-${dayID}-${chainId}`;
+  const aggregatedDataID = aggregatedDataId(srcAddress, timestamp, chainId);
+  const contractId = buildContractId(chainId, srcAddress);
 
-  let locksData = await context.EscrowLocksMetrics.get(aggregatedDataID);
+  let locksData = await context.EscrowLocksDailyMetrics.get(aggregatedDataID);
 
-  const stakerKey = `${srcAddress}-${staker}-${chainId}`;
+  const stakerKey = buildStakerId(srcAddress, staker, chainId);
   let stakerRecord = await context.StakerRegistry.get(stakerKey); // Assume StakerRegistry exists
 
   const amountActiveLocks = await stakerRecord.tokenIds.reduce(
     async (acc: number, tokenId: BigInt) => {
       const lock = await context.Deposit.get(
-        `${tokenId}-${srcAddress}-${chainId}`,
+        buildDepositId(tokenId, srcAddress, chainId),
+      );
+      if (lock.active) {
+        acc += 1;
+      }
+    },
+    0,
+  );
+
+  const isNewHolder =
+    isLocking && stakerRecord.tokenIds.length === 1 ? true : false;
+
+  let activeHolder = 0;
+
+  // If isNewHolder --> +1
+  // If Depositing
+  // --> If amountActiveLocks === 1 --> +1
+  // --> Else --> +0
+  // If Withdrawing
+  // --> If amountActiveLocks > 0 --> 0
+  // --> Esle --> -1
+  if (isNewHolder) activeHolder += 1;
+  else {
+    if (isLocking) {
+      if (amountActiveLocks === 1) activeHolder = 1;
+      else activeHolder = 0;
+    } else {
+      if (amountActiveLocks > 0) activeHolder = 0;
+      else activeHolder = -1;
+    }
+  }
+
+  if (!locksData) {
+    context.EscrowLocksDailyMetrics.set({
+      id: aggregatedDataID,
+      date: dayStartTimestamp,
+      contract_id: contractId,
+      totalLocked: totalLocked,
+      amountOfLocks: isLocking ? BigInt(1) : BigInt(0),
+      totalHolders: isNewHolder ? BigInt(1) : BigInt(0),
+      activeHolders: BigInt(activeHolder),
+    });
+  } else {
+    context.EscrowLocksDailyMetrics.set({
+      id: aggregatedDataID,
+      date: dayStartTimestamp,
+      contract_id: contractId,
+      totalLocked: totalLocked,
+      amountOfLocks: isLocking
+        ? locksData.amountOfLocks + BigInt(1)
+        : locksData.amountOfLocks - BigInt(1),
+      totalHolders: isNewHolder
+        ? locksData.totalHolders + BigInt(1)
+        : locksData.totalHolders,
+      activeHolders: locksData.activeHolders + BigInt(activeHolder),
+    });
+  }
+};
+
+
+export const updateEscrowLocksMetrics = async (
+  chainId: Number,
+  srcAddress: String,
+  staker: String,
+  totalLocked: BigInt,
+  isLocking: boolean,
+  context: Context,
+) => {
+  const contractId = buildContractId(chainId, srcAddress);
+
+  let locksData = await context.EscrowLocksMetrics.get(contractId);
+
+  const stakerKey = buildStakerId(srcAddress, staker, chainId);
+  let stakerRecord = await context.StakerRegistry.get(stakerKey); // Assume StakerRegistry exists
+
+  const amountActiveLocks = await stakerRecord.tokenIds.reduce(
+    async (acc: number, tokenId: BigInt) => {
+      const lock = await context.Deposit.get(
+        buildDepositId(tokenId, srcAddress, chainId),
       );
       if (lock.active) {
         acc += 1;
@@ -225,9 +398,8 @@ export const updateEscrowLocksMetrics = async (
 
   if (!locksData) {
     context.EscrowLocksMetrics.set({
-      id: aggregatedDataID,
-      date: dayStartTimestamp,
-      contract_id: `${chainId}-${srcAddress}`,
+      id: contractId,
+      contract_id: contractId,
       totalLocked: totalLocked,
       amountOfLocks: isLocking ? BigInt(1) : BigInt(0),
       totalHolders: isNewHolder ? BigInt(1) : BigInt(0),
@@ -235,9 +407,8 @@ export const updateEscrowLocksMetrics = async (
     });
   } else {
     context.EscrowLocksMetrics.set({
-      id: aggregatedDataID,
-      date: dayStartTimestamp,
-      contract_id: `${chainId}-${srcAddress}`,
+      id: contractId,
+      contract_id: contractId,
       totalLocked: totalLocked,
       amountOfLocks: isLocking
         ? locksData.amountOfLocks + BigInt(1)
@@ -262,7 +433,7 @@ export const updateVotingMetrics = async (
   isNewVote: boolean, // true for new votes, false for resets
   context: Context,
 ) => {
-  const dayId = getDayID(timestamp);
+  const dayId = getDayId(timestamp);
   const dayStartTimestamp = getDayStartTimestamp(dayId);
 
   // Update gauge daily metrics
@@ -315,9 +486,9 @@ const updateGaugeDailyMetrics = async (
   isNewVote: boolean,
   context: Context,
 ) => {
-  const gaugeMetricsId = `${gauge}-${srcAddress}-${dayId}-${chainId}`;
-  const contractMetricsId = `${srcAddress}-${dayId}-${chainId}`;
-  const contractId = `${chainId}-${srcAddress}`;
+  const gaugeMetricsId = buildDailyMetrictsId(gauge, srcAddress, dayTimestamp, chainId);
+  const contractMetricsId = aggregatedDataId(srcAddress, dayTimestamp, chainId);
+  const contractId = buildContractId(chainId, srcAddress);
 
   let gaugeMetrics = await context.GaugeDailyVotingMetrics.get(gaugeMetricsId);
 
@@ -367,8 +538,8 @@ const updateGaugePluginDailyMetrics = async (
   isNewVote: boolean,
   context: Context,
 ) => {
-  const contractMetricsId = `${srcAddress}-${dayId}-${chainId}`;
-  const contractId = `${chainId}-${srcAddress}`;
+  const contractMetricsId = aggregatedDataId(srcAddress, dayTimestamp, chainId);
+  const contractId = buildContractId(chainId, srcAddress);
 
   let contractMetrics =
     await context.GaugePluginDailyVotingMetrics.get(contractMetricsId);
@@ -414,13 +585,13 @@ const updateAllTimeMetrics = async (
   isNewVote: boolean,
   context: Context,
 ) => {
-  const metricsId = `${srcAddress}-${chainId}`;
-  const contractId = `${chainId}-${srcAddress}`;
+  const metricsId = buildAllTimeMetrictsId(srcAddress, chainId);
+  const contractId = buildContractId(chainId, srcAddress);
 
   let metrics = await context.GaugePluginVotingMetrics.get(metricsId);
 
   // Store a record of whether this voter has voted before to accurately track unique voters
-  const voterKey = `${srcAddress}-${voter}-${chainId}`;
+  const voterKey = buildVoterId(srcAddress, voter, chainId);
   let voterRecord = await context.VoterRegistry.get(voterKey); // Assume VoterRegistry exists
 
   let isNewVoter = false;

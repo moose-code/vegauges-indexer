@@ -27,10 +27,10 @@ async function tryFetchIpfsFile<T>(
     process.env.PINATA_IPFS_GATEWAY || "",
     "https://ipfs.io/ipfs",
   ];
-  const MAX_RETRIES = 2;
+  const MAX_RETRIES = 3;
   const RETRY_DELAY = 500; // in milliseconds
 
-  for (const endpoint of endpoints.flat()) {
+  for (const endpoint of endpoints.filter(n => n)) {
     let retries = 0;
     while (retries < MAX_RETRIES) {
       try {
@@ -39,14 +39,13 @@ async function tryFetchIpfsFile<T>(
         context.log.error(`Error fetching from endpoint ${endpoint}: ${error}`);
         retries++;
         if (retries < MAX_RETRIES) {
-          await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+          await new Promise(resolve => setTimeout(resolve, RETRY_DELAY * retries));
         }
       }
     }
   }
 
   throw new Error("Unable to fetch from all endpoints");
-
 }
 
 export async function fetchIpfs<T>(
