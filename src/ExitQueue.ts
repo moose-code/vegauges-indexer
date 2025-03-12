@@ -26,10 +26,11 @@ ExitQueue.Upgraded.handler(async ({ event, context }: any) => {
 
 ExitQueue.ExitQueued.handler(async ({ event, context }: any) => {
   const votingEscrowAddress = votingEscrow(event.srcAddress);
+  const contractId = buildContractId(event.chainId, votingEscrowAddress);
 
   const entity: ExitQueued = {
     id: `${event.chainId}-${event.block.number}-${event.logIndex}`,
-    contract_id: `${event.chainId}-${votingEscrowAddress}`,
+    contract_id: contractId,
     tokenId: event.params.tokenId,
     holder: event.params.holder,
     exitDate: event.params.exitDate,
@@ -56,6 +57,7 @@ const updateExitQueueDailyMetrics = async (
   const dayID = getDayId(Number(exitDate));
   const dayStartTimestamp = getDayStartTimestamp(dayID);
   const aggregatedDataID = `${votingEscrow}-${dayID}-${chainId}`;
+  const contractId = buildContractId(chainId, votingEscrow);
 
   let exitQueueData = await context.ExitQueueDailyMetrics.get(aggregatedDataID);
 
@@ -71,7 +73,7 @@ const updateExitQueueDailyMetrics = async (
   if (!exitQueueData) {
     const newExitQueueData = {
       id: aggregatedDataID,
-      contract_id: `${chainId}-${votingEscrow}`,
+      contract_id: contractId,
       date: dayStartTimestamp,
       amountOfExits: BigInt(1),
       totalTokens: lock.value,
@@ -80,7 +82,7 @@ const updateExitQueueDailyMetrics = async (
   } else {
     const updatedExitQueueData = {
       id: aggregatedDataID,
-      contract_id: `${chainId}-${votingEscrow}`,
+      contract_id: contractId,
       date: dayStartTimestamp,
       amountOfExits: exitQueueData.amountOfExits + BigInt(1),
       totalTokens: exitQueueData.totalTokens + lock.value,

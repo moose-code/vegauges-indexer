@@ -46,7 +46,7 @@ export const setGauge = async (
 
   context.Gauge.set({
     id: gaugeId,
-    gauge: gauge,
+    address: gauge,
     creator: creator,
     metadataURI: metadataURI,
     metadata: metadata,
@@ -489,6 +489,7 @@ const updateGaugeDailyMetrics = async (
   const gaugeMetricsId = buildDailyMetrictsId(gauge, srcAddress, dayTimestamp, chainId);
   const contractMetricsId = aggregatedDataId(srcAddress, dayTimestamp, chainId);
   const contractId = buildContractId(chainId, srcAddress);
+  const gaugeId = buildGaugeId(gauge, srcAddress, chainId);
 
   let gaugeMetrics = await context.GaugeDailyVotingMetrics.get(gaugeMetricsId);
 
@@ -500,7 +501,7 @@ const updateGaugeDailyMetrics = async (
     await context.GaugeDailyVotingMetrics.set({
       id: gaugeMetricsId,
       date: dayTimestamp,
-      gauge: gauge,
+      gauge_id: gaugeId,
       contract_id: contractId,
       totalVotingPowerChange: isNewVote ? BigInt(votingPower.toString()) : -BigInt(votingPower.toString()),
       totalVotingPowerInGauge: totalVotingPowerInGauge,
@@ -518,7 +519,7 @@ const updateGaugeDailyMetrics = async (
     await context.GaugeDailyVotingMetrics.set({
       id: gaugeMetricsId,
       date: dayTimestamp,
-      gauge: gauge,
+      gauge_id: gaugeId,
       contract_id: contractId,
       totalVotingPowerChange: newVotingPower,
       totalVotingPowerInGauge: totalVotingPowerInGauge,

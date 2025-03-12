@@ -18,7 +18,7 @@ type ProxyContractUpdates {
 type Gauge {
     id: ID! # gauge-plugin-chainId
     gaugePlugin: GaugePlugin!
-    gauge: String!
+    address: String!
     creator: String!
     metadataURI: String!
     metadata: String!
@@ -199,7 +199,7 @@ type GaugeDailyVotingMetrics {
     id: ID! # gauge-plugin-dayId-chainId
     contract: Contract!
     date: Int! # timestamp rounded to current day by dividing by 86400
-    gauge: String!
+    gauge: Gauge!
     totalVotingPowerChange: BigInt!
     totalVotingPowerInGauge: BigInt!
     voterCount: BigInt!
