@@ -8,7 +8,8 @@ import {
   aggregatedDataId,
   buildDepositId,
   buildAllTimeMetrictsId,
-  buildDailyMetrictsId
+  buildDailyMetrictsId,
+  buildVoterMetrictsId,
 } from "./utils/idBuilder";
 import { getDayId, getDayStartTimestamp } from "./utils/timeHelpers";
 
@@ -324,9 +325,9 @@ export const updateEscrowLocksDailyMetrics = async (
       date: dayStartTimestamp,
       contract_id: contractId,
       totalLocked: totalLocked,
-      amountOfLocks: isLocking ? BigInt(1) : BigInt(0),
-      totalHolders: isNewHolder ? BigInt(1) : BigInt(0),
-      activeHolders: BigInt(activeHolder),
+      amountOfLocks: isLocking ? 1 : 0,
+      totalHolders: isNewHolder ? 1 : 0,
+      activeHolders: activeHolder,
     });
   } else {
     context.EscrowLocksDailyMetrics.set({
@@ -335,12 +336,12 @@ export const updateEscrowLocksDailyMetrics = async (
       contract_id: contractId,
       totalLocked: totalLocked,
       amountOfLocks: isLocking
-        ? locksData.amountOfLocks + BigInt(1)
-        : locksData.amountOfLocks - BigInt(1),
+        ? locksData.amountOfLocks + 1
+        : locksData.amountOfLocks - 1,
       totalHolders: isNewHolder
-        ? locksData.totalHolders + BigInt(1)
+        ? locksData.totalHolders + 1
         : locksData.totalHolders,
-      activeHolders: locksData.activeHolders + BigInt(activeHolder),
+      activeHolders: locksData.activeHolders + activeHolder,
     });
   }
 };
@@ -401,9 +402,9 @@ export const updateEscrowLocksMetrics = async (
       id: contractId,
       contract_id: contractId,
       totalLocked: totalLocked,
-      amountOfLocks: isLocking ? BigInt(1) : BigInt(0),
-      totalHolders: isNewHolder ? BigInt(1) : BigInt(0),
-      activeHolders: BigInt(activeHolder),
+      amountOfLocks: isLocking ? 1 : 0,
+      totalHolders: isNewHolder ? 1 : 0,
+      activeHolders: activeHolder,
     });
   } else {
     context.EscrowLocksMetrics.set({
@@ -411,12 +412,12 @@ export const updateEscrowLocksMetrics = async (
       contract_id: contractId,
       totalLocked: totalLocked,
       amountOfLocks: isLocking
-        ? locksData.amountOfLocks + BigInt(1)
-        : locksData.amountOfLocks - BigInt(1),
+        ? locksData.amountOfLocks + 1
+        : locksData.amountOfLocks - 1,
       totalHolders: isNewHolder
-        ? locksData.totalHolders + BigInt(1)
+        ? locksData.totalHolders + 1
         : locksData.totalHolders,
-      activeHolders: locksData.activeHolders + BigInt(activeHolder),
+      activeHolders: locksData.activeHolders + activeHolder,
     });
   }
 };
@@ -426,6 +427,7 @@ export const updateVotingMetrics = async (
   srcAddress: String,
   gauge: String,
   voter: String,
+  epoch: BigInt,
   votingPower: BigInt,
   totalVotingPowerInGauge: BigInt,
   totalVotingPowerInContract: BigInt,
@@ -471,6 +473,18 @@ export const updateVotingMetrics = async (
     isNewVote,
     context,
   );
+
+  await updateEpochGaugeVoterVotesMetrics(
+    chainId,
+    srcAddress,
+    gauge,
+    voter,
+    epoch,
+    votingPower,
+    timestamp,
+    isNewVote,
+    context,
+  )
 };
 
 // Helper to update metrics for a specific gauge for a specific day
@@ -574,6 +588,32 @@ const updateGaugePluginDailyMetrics = async (
       votesCount: contractMetrics.votesCount + voterCountChange,
     });
   }
+};
+
+const updateEpochGaugeVoterVotesMetrics = async (
+  chainId: Number,
+  srcAddress: String,
+  gauge: String,
+  voter: String,
+  epoch: BigInt,
+  votingPower: BigInt,
+  timestamp: number,
+  isNewVote: boolean,
+  context: Context,
+) => {
+  const metricsId = buildVoterMetrictsId(timestamp, voter, gauge, srcAddress, chainId);
+  const gaugeId = buildGaugeId(gauge, srcAddress, chainId);
+  const contractId = buildContractId(chainId, srcAddress);
+
+  context.EpochGaugeVoterVotes.set({
+    id: metricsId,
+    epoch: epoch,
+    gauge_id: gaugeId,
+    contract_id: contractId,
+    voter: voter,
+    votingPower: isNewVote ? votingPower : BigInt(0),
+    timestamp: timestamp,
+  });
 };
 
 // Helper to update all-time metrics

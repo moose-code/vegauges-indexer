@@ -25,8 +25,8 @@ type Gauge {
     name: String
     logo: String
     active: Boolean!
-    # dailyMetricts: [GaugeDailyVotingMetrics!]! @derivedFrom(field: "gauge")
-    # allTimeMetrics: GaugePluginVotingMetrics! @derivedFrom(field: "plugin")
+    # dailyMetricts: [GaugeDailyVotingMetrics!]! @derivedFrom(field: "address")
+    # allTimeMetrics: GaugePluginVotingMetrics! @derivedFrom(field: "gaugePlugin_id")
 }
 
 type GaugePlugin {
@@ -179,9 +179,9 @@ type EscrowLocksMetrics {
     id: ID! # escrowAddress + "-" + chainId
     contract: Contract!
     totalLocked: BigInt!
-    amountOfLocks: BigInt!
-    totalHolders: BigInt!
-    activeHolders: BigInt!
+    amountOfLocks: Int!
+    totalHolders: Int!
+    activeHolders: Int!
 }
 
 type EscrowLocksDailyMetrics {
@@ -189,9 +189,9 @@ type EscrowLocksDailyMetrics {
     date: Int! # timestamp rounded to current day by dividing by 86400
     contract: Contract!
     totalLocked: BigInt!
-    amountOfLocks: BigInt!
-    totalHolders: BigInt!
-    activeHolders: BigInt!
+    amountOfLocks: Int!
+    totalHolders: Int!
+    activeHolders: Int!
 }
 
 # Daily metrics for a specific gauge
@@ -214,6 +214,26 @@ type GaugePluginDailyVotingMetrics {
     totalVotingPowerChange: BigInt!
     votesCount: BigInt!
     gaugeMetrics: [GaugeDailyVotingMetrics!]! @derivedFrom(field: "gaugePlugin")
+}
+
+type CurrentGaugeVoterVotes {
+    id: ID! # voter-gauge-plugin-chainId
+    epoch: BigInt!
+    voter: String!
+    gauge: Gauge!
+    contract: Contract!
+    votingPower: BigInt!
+    timestamp: BigInt!
+}
+
+type EpochGaugeVoterVotes {
+    id: ID! # timestamp-voter-gauge-plugin-chainId
+    epoch: BigInt!
+    voter: String!
+    gauge: Gauge!
+    contract: Contract!
+    votingPower: BigInt!
+    timestamp: BigInt!
 }
 
 # Historical total metrics (all-time)

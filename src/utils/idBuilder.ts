@@ -41,3 +41,7 @@ export const buildDailyMetrictsId = (gauge: String, gaugePlugin: String, timesta
   const dayId = getDayId(timestamp);
   return `${gauge}-${gaugePlugin}-${dayId}-${chainId}`;
 }
+
+export const buildVoterMetrictsId = (timestamp: number, voter: String, gauge: String, gaugePlugin: String, chainId: Number) => {
+  return `${timestamp}-${voter}-${gauge}-${gaugePlugin}-${chainId}`;
+}
