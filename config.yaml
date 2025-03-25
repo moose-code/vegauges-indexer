@@ -27,7 +27,7 @@ contracts:
       - event: Upgraded(address indexed implementation)
       - event: Initialized(uint8 version)
 networks:
-  - id: 1
+  - id: 1 # Mainnet
     start_block: 0
     contracts:
       - name: VotingEscrowIncreasing
@@ -36,7 +36,7 @@ networks:
       - name: ExitQueue
         address:
           - 0xD9C2d314E29F1940d2a65A691881F0950fE4A455
-  - id: 34443
+  - id: 34443 # Mode
     start_block: 0
     contracts:
       - name: VotingEscrowIncreasing
@@ -57,3 +57,15 @@ networks:
           - 0x1c9B7bD4b3684A0c34Bd9A9b3f7F2dFC8fD81826 # Mode BPT
           - 0x03477487df4de0B5EF852e7C21A74f9C71f0e910 # xKIM
           - 0xa6361bAAF26c7841Dd7Ac69945Fbb9e5362Ab2C7 # ETH<>KIM
+  - id: 56 # BNB
+    start_block: 0
+    contracts:
+      - name: VotingEscrowIncreasing
+        address:
+          - 0xe9786294973de1CD376a0A6189d7aE250D490C16
+      - name: SimpleGaugeVoter
+        address:
+          - 0xcee845c5db2d8595C6086401a79501c10bb97a0f
+      - name: ExitQueue
+        address:
+          - 0xecE1FdAA2b0b97B3B7e43af01Aa150F0E2DA2869
