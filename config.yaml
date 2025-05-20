@@ -62,10 +62,22 @@ networks:
     contracts:
       - name: VotingEscrowIncreasing
         address:
-          - 0xe9786294973de1CD376a0A6189d7aE250D490C16
+          - 0xe9786294973de1CD376a0A6189d7aE250D490C16 # Bedrock
       - name: SimpleGaugeVoter
         address:
-          - 0xcee845c5db2d8595C6086401a79501c10bb97a0f
+          - 0xcee845c5db2d8595C6086401a79501c10bb97a0f # Bedrock
       - name: ExitQueue
         address:
-          - 0xecE1FdAA2b0b97B3B7e43af01Aa150F0E2DA2869
+          - 0xecE1FdAA2b0b97B3B7e43af01Aa150F0E2DA2869 # Bedrock
+  - id: 42220 # Celo
+    start_block: 33515975
+    contracts:
+      - name: VotingEscrowIncreasing
+        address:
+          - 0x76Ba3E61f1E736E42e063B815f3D7c9cCb0716c2 # Celo
+      - name: SimpleGaugeVoter
+        address:
+          - 0xEaF38cB8293efef9367a31686f64cC92C61d9ad6 # Celo
+      - name: ExitQueue
+        address:
+          - 0x4BDf0A33c21ad12EB49e68cA26FB59a77f42F2b0 # Celo
